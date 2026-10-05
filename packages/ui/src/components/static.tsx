@@ -82,7 +82,7 @@ export function PromiseStrip({ items }: { items: { key: string; label: string }[
   return (
     <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
       {items.map((it) => (
-        <li key={it.key} className="pp-card flex items-center gap-3 border border-gold-100 px-3 py-3 text-small">
+        <li key={it.key} className="pp-card flex items-center gap-3 border border-gold-line px-3 py-3 text-small">
           <span className="shrink-0 text-gold-700">{icons[it.key] ?? <IconCheck />}</span>
           <span className="font-medium">{it.label}</span>
         </li>
@@ -116,7 +116,7 @@ export function StepsRow({ steps }: { steps: { title: string; text: string }[] }
 export function TrustBar({ items, asOf, label }: { items: { key: string; text: string }[]; asOf: string; label: string }) {
   if (!items.length) return null;
   return (
-    <section aria-label={label} className="pp-card border border-gold-100 px-4 py-4">
+    <section aria-label={label} className="pp-card border border-gold-line px-4 py-4">
       <ul className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-center">
         {items.map((it) => (
           <li key={it.key} className="font-display text-h3 text-ink-900">{it.text}</li>
@@ -138,7 +138,7 @@ export function VenueBadge({ label }: { label: string }) {
 
 export function OccasionChip({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-chip bg-ink-900 px-2.5 py-0.5 text-small font-medium text-gold-100">
+    <span className="inline-flex items-center rounded-chip border border-gold-600 bg-surface/95 px-2.5 py-0.5 text-small font-semibold text-gold-700">
       {children}
     </span>
   );
@@ -216,7 +216,7 @@ export function ReviewCard({ rating, text, name, meta, ratingLabel }: {
 // ---------------------------------------------------------------- detail blocks
 export function FactBox({ facts }: { facts: { label: string; value: string }[] }) {
   return (
-    <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-card border border-marble-200 bg-marble-200">
+    <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-card border border-gold-line bg-gold-line">
       {facts.map((f) => (
         <div key={f.label} className="bg-surface p-4">
           <dt className="text-small text-ink-600">{f.label}</dt>
@@ -261,7 +261,7 @@ export function RitualSteps({ items, mainLabel }: { items: { title: string; text
 
 export function DeliverablesList({ items, note }: { items: string[]; note: string }) {
   return (
-    <div className="pp-card border border-gold-100 p-5">
+    <div className="pp-card border border-gold-line p-5">
       <ul className="space-y-2">
         {items.map((d) => (
           <li key={d} className="flex items-start gap-2"><IconCheck size={20} className="mt-1 shrink-0 text-tulsi-600" />{d}</li>
@@ -275,7 +275,7 @@ export function DeliverablesList({ items, note }: { items: string[]; note: strin
 /** FAQ accordion on native <details>: works without JavaScript and is keyboard-accessible. */
 export function Accordion({ items }: { items: { q: string; a: string }[] }) {
   return (
-    <div className="divide-y divide-marble-200 rounded-card border border-marble-200 bg-surface">
+    <div className="divide-y divide-gold-line rounded-card border border-gold-line bg-surface">
       {items.map((f) => (
         <details key={f.q} className="group px-4 py-1">
           <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 py-2 font-semibold [&::-webkit-details-marker]:hidden">

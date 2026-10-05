@@ -1,0 +1,43 @@
+# Render Blueprint for the FastAPI backend (New > Blueprint, pick this repo).
+# Background jobs run inside the API (JOBS_MODE=inline), so no Redis or worker service is needed.
+services:
+  - type: web
+    name: pujapath-api
+    runtime: python
+    rootDir: apps/api
+    buildCommand: pip install -r requirements.txt
+    startCommand: alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: JOBS_MODE
+        value: inline
+      - key: APP_ENV
+        value: development   # keeps the fake payment/OTP flows; use production once real provider keys are set
+      - key: BRAND
+        value: Puja Path
+      - key: MESSAGING_PROVIDER
+        value: fake
+      - key: PAYMENT_PROVIDER
+        value: fake
+      - key: SHIPPING_PROVIDER
+        value: fake
+      - key: SMS_OTP_PROVIDER
+        value: fake
+      - key: JWT_SECRET
+        generateValue: true
+      - key: REVALIDATE_SECRET
+        sync: false   # must match the website's REVALIDATE_SECRET
+      - key: DATABASE_URL
+        sync: false   # Neon connection string
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false   # https://<your website>
+      - key: WEB_INTERNAL_URL
+        sync: false   # same as NEXT_PUBLIC_SITE_URL
+      - key: API_PUBLIC_URL
+        sync: false   # https://<this service>.onrender.com
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false

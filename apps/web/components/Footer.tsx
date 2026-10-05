@@ -14,7 +14,7 @@ export default async function Footer({ config }: { config: SiteConfig }) {
   });
   const socials = Object.entries(config.social_links).filter(([, url]) => !!url);
   return (
-    <footer className="pp-marble mt-16 border-t border-gold-600 bg-marble-100 pb-24 md:pb-8">
+    <footer className="pp-marble mt-16 border-t-2 border-gold-500 pb-24 md:pb-8">
       <div className="pp-gutter grid gap-8 py-10 md:grid-cols-3">
         <div>
           <p className="flex items-center gap-2 font-display text-h3"><GlyphLotus className="text-gold-600" />{config.brand}</p>

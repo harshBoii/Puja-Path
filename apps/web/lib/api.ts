@@ -3,7 +3,9 @@ import "server-only";
 
 import type { Home, Listing, PujaDetail, SiteConfig, TempleDetail, TempleSummary, Proof, SitemapData } from "./types";
 
-const API_URL = process.env.API_URL ?? "http://localhost:8000";
+import { apiBaseUrl } from "./api-url";
+
+const API_URL = apiBaseUrl();
 
 type Opts = { revalidate?: number | false; tags?: string[] };
 

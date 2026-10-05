@@ -11,7 +11,7 @@ export default async function Header({ config }: { config: SiteConfig }) {
   const t = await getTranslations();
   const locale = (await getLocale()) as Locale;
   return (
-    <header className="sticky top-0 z-40 border-b border-marble-200 bg-marble-50/95">
+    <header className="sticky top-0 z-40 border-b border-gold-line bg-surface/90">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:bg-surface focus:p-2">
         {t("nav.skipToContent")}
       </a>

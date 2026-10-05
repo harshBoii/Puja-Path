@@ -80,7 +80,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         breadcrumbs([{ name: config.brand, url: `/${locale}` }]),
         ...(faqs.length ? [faqPage(faqs)] : []),
       ]} />
-      <section className="pp-marble border-b border-marble-200 pb-8 pt-6 md:pt-10">
+      <section className="pp-marble border-b border-gold-line pb-8 pt-6 md:pt-10">
         <div className="pp-gutter">
           <h1 className="sr-only">{t("meta.homeTitle", { brand: config.brand })}</h1>
           <HeroCarousel slides={slides} label={t("home.upcomingTitle")} prevLabel={t("common.back")} nextLabel={t("common.continue")} />

@@ -8,7 +8,7 @@ import os
 os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL",
                                             "postgresql://postgres@localhost:55432/pujapath_test")
 os.environ["APP_ENV"] = "test"
-os.environ["REDIS_URL"] = os.environ.get("TEST_REDIS_URL", "redis://localhost:6379/15")
+os.environ["JOBS_MODE"] = "manual"  # tests run jobs explicitly; nothing runs in the background
 for k in ("MESSAGING_PROVIDER", "PAYMENT_PROVIDER", "SHIPPING_PROVIDER", "SMS_OTP_PROVIDER"):
     os.environ[k] = "fake"
 os.environ["WEB_INTERNAL_URL"] = "http://127.0.0.1:9"  # revalidation calls fail fast and are ignored

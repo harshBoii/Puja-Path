@@ -1,4 +1,4 @@
-export const LOCALES = ["te", "hi", "ta", "en"] as const;
+export const LOCALES = ["en", "hi", "ta", "te"] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "en";
 export const LOCALE_COOKIE = "pp_locale";

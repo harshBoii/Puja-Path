@@ -18,7 +18,7 @@ export default function BottomTabBar({ labels }: { labels: { home: string; pujas
   ];
   return (
     <nav aria-label={labels.nav}
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-marble-200 bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-gold-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
       <ul className="grid grid-cols-4">
         {tabs.map((t) => (
           <li key={t.href}>

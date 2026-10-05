@@ -1,5 +1,5 @@
 "use client";
-import { IconGlobe } from "@pujapath/ui";
+import { IconChevronDown, IconGlobe } from "@pujapath/ui";
 import { usePathname } from "next/navigation";
 import { useId } from "react";
 
@@ -25,11 +25,12 @@ export default function LanguageSwitcher({ current, label }: { current: Locale; 
   return (
     <div className="relative flex items-center">
       <label htmlFor={id} className="sr-only">{label}</label>
-      <IconGlobe size={20} className="pointer-events-none absolute left-3 text-gold-700" />
+      <IconGlobe size={16} className="pointer-events-none absolute left-2.5 text-gold-700" />
       <select id={id} value={current} onChange={(e) => switchLocale(e.target.value as Locale, pathname)}
-        className="min-h-12 appearance-none rounded-btn border border-marble-200 bg-surface py-2 pl-9 pr-3 text-small font-medium text-ink-900">
+        className="h-10 min-w-0 cursor-pointer appearance-none rounded-chip border border-gold-600/60 bg-surface/80 py-0 pl-8 pr-7 text-small font-medium text-ink-900 hover:border-gold-600 focus-visible:border-gold-600">
         {LOCALES.map((l) => <option key={l} value={l} lang={l}>{NATIVE_NAMES[l]}</option>)}
       </select>
+      <IconChevronDown size={14} className="pointer-events-none absolute right-2.5 text-gold-700" />
     </div>
   );
 }

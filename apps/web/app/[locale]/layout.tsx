@@ -50,7 +50,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const clientMessages = Object.fromEntries(CLIENT_NAMESPACES.map((ns) => [ns, messages[ns]]));
   const fonts = fontsFor(locale);
   // The marble texture sits behind the hero (often the LCP element); preload so CSS does not discover it late.
-  preload("/images/marble-tile.webp", { as: "image", type: "image/webp" });
+  preload("/images/marble-white.webp", { as: "image", type: "image/webp" });
   return (
     <html lang={locale} className={fonts.className} style={fonts.style} suppressHydrationWarning>
       <head>

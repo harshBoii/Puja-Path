@@ -1,44 +1,15 @@
 """Generates the original placeholder artwork used by seed data (no third-party imagery).
 
-- apps/web/public/images/marble-tile.webp : 1200 px vein texture (<= 40 KB), used at 6-8% opacity
 - apps/web/public/images/seed/*.svg       : devotional motif illustrations per puja/temple/offering
 """
 
 import math
-import random
 from pathlib import Path
-
-from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "apps/web/public/images"
 SEED = OUT / "seed"
 SEED.mkdir(parents=True, exist_ok=True)
-
-
-def marble_tile(size=1200, seed=7):
-    rnd = random.Random(seed)
-    img = Image.new("L", (size, size), 255)
-    d = ImageDraw.Draw(img)
-    for _ in range(26):
-        x, y = rnd.uniform(-200, size), rnd.uniform(-200, size)
-        ang = rnd.uniform(-0.6, 0.6) + math.pi / 5
-        pts = []
-        for _ in range(140):
-            pts.append((x % size, y % size))
-            ang += rnd.uniform(-0.18, 0.18)
-            x += math.cos(ang) * 9
-            y += math.sin(ang) * 9
-        for a, b in zip(pts, pts[1:]):
-            if abs(a[0] - b[0]) < 50 and abs(a[1] - b[1]) < 50:
-                d.line([a, b], fill=rnd.randint(120, 200), width=rnd.choice([1, 1, 2, 3]))
-    img = img.filter(ImageFilter.GaussianBlur(1.6))
-    for q in (40, 30, 22, 15):
-        p = OUT / "marble-tile.webp"
-        img.save(p, "WEBP", quality=q, method=6)
-        if p.stat().st_size <= 40 * 1024:
-            break
-    print("marble-tile.webp", p.stat().st_size, "bytes")
 
 
 MOTIFS = {
@@ -56,7 +27,8 @@ MOTIFS = {
     "seeds": "".join(f'<ellipse cx="{560 + (i % 6) * 18}" cy="{560 + (i // 6) * 14}" rx="7" ry="4" fill="#2B2118"/>' for i in range(30)) + '<path d="M480 600 Q600 690 720 600" fill="none" stroke="#B8922E" stroke-width="8"/>',
 }
 
-BG = [("#FBF9F5", "#F4F0E8"), ("#F6EDD0", "#FBF9F5"), ("#F4F0E8", "#E7E1D6"), ("#FBF9F5", "#F6EDD0")]
+# polished white-marble grounds (white theme)
+BG = [("#FFFFFF", "#F7F6F3"), ("#FFFFFF", "#FBF7EC"), ("#FDFDFC", "#F3F2EE"), ("#FFFFFF", "#F9F6EE")]
 
 
 def svg(name: str, motif: str, variant: int = 0) -> None:
@@ -85,7 +57,6 @@ ART = {
 }
 
 if __name__ == "__main__":
-    marble_tile()
     for name, (motif, v) in ART.items():
         svg(name, motif, v)
     print(len(ART), "svgs")

@@ -4,20 +4,30 @@ Online puja booking platform built from `materials/Online Puja Platform — PRD 
 
 ## Layout
 - `apps/api`: FastAPI, SQLAlchemy, Alembic. Providers live in `providers/{messaging,payments,shipping}` (fake, WATI, Gupshup, Razorpay, Cashfree, Shiprocket).
-- `apps/worker/worker.py`: Arq worker (message dispatch, cutoff locking, AutoPay, SLA checks, expiry, reconciliation, purge).
+- Background jobs (message dispatch, cutoff locking, AutoPay, SLA checks, payment expiry, reconciliation, purge) live in
+  `apps/api/services/tasks.py`. `JOBS_MODE=inline` (default) runs them inside the API, with no Redis and no worker.
+  `JOBS_MODE=worker` runs them on the Arq worker (`apps/worker/worker.py`) with Redis instead.
 - `apps/web`: Next.js 16 storefront (`/[locale]`) and admin (`/admin`).
 - `packages/ui`: design tokens and components. `packages/locales`: en, hi, ta and te strings, checked by `scripts/check-locales.mjs`.
 - `infra`: docker-compose (Postgres, Redis) and the seed art generator.
 
 ## Run locally
 ```
-redis-server --daemonize yes
 cd apps/api && uv sync && uv run alembic upgrade head && uv run python seed.py --catalog
-uv run uvicorn main:app --port 8000          # API
-uv run python ../worker/worker.py            # worker
+uv run uvicorn main:app --port 8000          # API (also runs background jobs with JOBS_MODE=inline)
 cd ../web && npx -y pnpm@10 install && npx next dev -p 3000   # set API_URL in apps/web/.env.local
 ```
 The admin login comes from `ADMIN_EMAIL`/`ADMIN_PASSWORD` in `apps/api/.env`. TOTP is enrolled on first sign-in.
+
+## Deploy
+- **Backend on Render:** New > Blueprint, pick this repo (`render.yaml`). It pins Python 3.12, installs
+  `apps/api/requirements.txt`, runs migrations on start, and uses `JOBS_MODE=inline` (no Redis or worker).
+  Fill in the `sync: false` variables (Neon `DATABASE_URL`, site URLs, `REVALIDATE_SECRET`, admin login).
+  If you change Python dependencies, regenerate the file:
+  `cd apps/api && uv export --no-dev --no-hashes --no-emit-project -o requirements.txt`.
+- **Website on Vercel:** Root Directory `apps/web`. Set `API_URL` (the Render URL; `https://` is added if missing),
+  `NEXT_PUBLIC_SITE_URL` and `REVALIDATE_SECRET` (same value as the API). Deploy the backend first: the build
+  fetches site config and pre-renders pages from the API.
 
 ## Checks (all run in CI: `.github/workflows/ci.yml`)
 - API: `cd apps/api && TEST_DATABASE_URL=postgresql://... uv run pytest`. 55 tests, covering M2–M5 acceptance on fake providers.

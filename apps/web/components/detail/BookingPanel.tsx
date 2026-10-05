@@ -79,7 +79,7 @@ export default function BookingPanel({ puja, contact }: { puja: PujaDetail; cont
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 @container">
       <div className="flex items-center gap-2 text-small" role="group" aria-label={t("common.currency")}>
         <span className="text-ink-600">{t("common.currency")}:</span>
         {(["INR", "USD"] as const).map((c) => (
@@ -92,13 +92,14 @@ export default function BookingPanel({ puja, contact }: { puja: PujaDetail; cont
           priceLabel: fmt(p.prices[currency]) }))} />
 
       {isChadhava && puja.addons.length > 0 && (
-        <fieldset>
+        <fieldset className="@container">
           <legend className="mb-3 text-h3">{t("puja.chadhavaTitle")}</legend>
-          <ul className="grid gap-3 sm:grid-cols-2">
+          {/* columns follow the panel's own width (narrow sticky column on desktop), not the screen */}
+          <ul className="grid gap-3 @xl:grid-cols-2">
             {puja.addons.map((a) => (
-              <li key={a.id} className="pp-card flex items-center gap-3 p-3">
-                {a.image && <img src={a.image.url} alt="" className="h-16 w-16 rounded-btn object-cover" loading="lazy" />}
-                <div className="min-w-0 flex-1">
+              <li key={a.id} className="pp-card flex flex-wrap items-center gap-3 p-3">
+                {a.image && <img src={a.image.url} alt="" className="h-14 w-14 shrink-0 rounded-btn object-cover" loading="lazy" />}
+                <div className="min-w-32 flex-1">
                   <p className="font-semibold">{a.name}</p>
                   <p className="text-small text-ink-600">{fmt(a.prices[currency])}</p>
                 </div>
@@ -121,7 +122,7 @@ export default function BookingPanel({ puja, contact }: { puja: PujaDetail; cont
                 note: t("puja.totalFor", { count: seva.occurrences, amount: fmt(perOccurrence * seva.occurrences) }) }] : []),
             ].map((o) => (
               <label key={o.v} className={cx("flex min-h-12 cursor-pointer items-start gap-3 rounded-card p-4",
-                mode === o.v ? "pp-foil-border" : "border border-marble-200 bg-surface")}>
+                mode === o.v ? "pp-foil-border" : "border border-gold-line bg-surface")}>
                 <input type="radio" name="paymode" className="mt-1.5 h-5 w-5 accent-[var(--gold-600)]" checked={mode === o.v}
                   onChange={() => setMode(o.v)} />
                 <span><span className="block font-semibold">{o.label}</span><span className="text-small text-ink-600">{o.note}</span></span>
@@ -137,7 +138,7 @@ export default function BookingPanel({ puja, contact }: { puja: PujaDetail; cont
       <div className="hidden flex-wrap gap-3 md:flex">
         {button}
       </div>
-      <div className="flex flex-col gap-3 sm:flex-row">{contact}</div>
+      <div className="flex flex-col gap-3 @xl:flex-row">{contact}</div>
 
       <StickyBookBar title={pkg ? `${pkg.label} · ${t("puja.names", { count: pkg.max_names })}` : puja.title}
         price={fmt(total)} action={button} />

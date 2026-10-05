@@ -20,7 +20,7 @@ export function PackageSelector({ options, value, onChange, legend }: {
           return (
             <label key={o.id}
               className={cx("relative flex min-h-12 cursor-pointer items-center justify-between gap-3 rounded-card p-4",
-                selected ? "pp-foil-border shadow-card" : "border border-marble-200 bg-surface")}>
+                selected ? "pp-foil-border shadow-card" : "border border-gold-line bg-surface")}>
               <input type="radio" name={name} value={o.id} checked={selected} onChange={() => onChange(o.id)}
                 className="peer sr-only" />
               <span>
@@ -42,7 +42,7 @@ export function QtyStepper({ value, max, onChange, label, decLabel, incLabel }: 
   value: number; max: number; onChange: (n: number) => void; label: string; decLabel: string; incLabel: string;
 }) {
   return (
-    <div className="inline-flex items-center rounded-btn border border-marble-400 bg-surface" role="group" aria-label={label}>
+    <div className="inline-flex shrink-0 items-center rounded-btn border border-gold-600 bg-surface" role="group" aria-label={label}>
       <button type="button" className="flex h-12 w-12 items-center justify-center text-gold-700 disabled:text-marble-400"
         onClick={() => onChange(Math.max(0, value - 1))} disabled={value <= 0} aria-label={decLabel}><IconMinus /></button>
       <output className="w-8 text-center font-semibold tabular-nums" aria-live="polite">{value}</output>
@@ -66,14 +66,14 @@ export function BottomSheet({ open, onClose, title, children, footer, closeLabel
   return (
     <dialog ref={ref} onClose={onClose} onCancel={onClose} aria-label={title}
       className="m-0 mt-auto max-h-[85vh] w-full max-w-none rounded-t-[20px] bg-surface p-0 text-ink-900 backdrop:bg-ink-900/40 md:m-auto md:max-w-lg md:rounded-card">
-      <div className="flex items-center justify-between border-b border-marble-200 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-gold-line px-4 py-3">
         <h2 className="text-h3">{title}</h2>
         <button type="button" onClick={onClose} className="flex h-12 w-12 items-center justify-center" aria-label={closeLabel}>
           <IconX />
         </button>
       </div>
       <div className="max-h-[60vh] overflow-y-auto px-4 py-4">{children}</div>
-      {footer && <div className="flex gap-3 border-t border-marble-200 px-4 py-3">{footer}</div>}
+      {footer && <div className="flex gap-3 border-t border-gold-line px-4 py-3">{footer}</div>}
     </dialog>
   );
 }
@@ -185,7 +185,7 @@ export function SectionNav({ sections, label }: { sections: { id: string; label:
     return () => obs.disconnect();
   }, [sections]);
   return (
-    <nav aria-label={label} className="sticky top-16 z-20 -mx-4 border-b border-marble-200 bg-marble-50/95 px-4 backdrop-blur-none md:top-20">
+    <nav aria-label={label} className="sticky top-16 z-20 -mx-4 border-b border-gold-line bg-surface/90 px-4 backdrop-blur-none md:top-20">
       <ul className="pp-scroll-x flex gap-2 py-2">
         {sections.map((s) => (
           <li key={s.id} className="snap-start">

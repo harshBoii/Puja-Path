@@ -364,15 +364,15 @@ export default function Checkout({ draftId }: { draftId: string }) {
               {step >= 2 && (
                 <>
                   {draft.available_addons.length > 0 && (
-                    <div>
+                    <div className="@container">
                       <h3 className="mb-2 text-h3">{t("checkout.addons")}</h3>
-                      <ul className="grid gap-3 sm:grid-cols-2">
+                      <ul className="grid gap-3 @xl:grid-cols-2">
                         {draft.available_addons.map((a) => {
                           const q = draft.addons.find((x) => x.id === a.id)?.qty ?? 0;
                           return (
-                            <li key={a.id} className="pp-card flex items-center gap-3 p-3">
-                              {a.image && <img src={a.image.url} alt="" className="h-14 w-14 rounded-btn object-cover" />}
-                              <div className="min-w-0 flex-1"><p className="font-semibold">{a.name}</p><p className="text-small text-ink-600">{fmt(a.price_minor)}</p></div>
+                            <li key={a.id} className="pp-card flex flex-wrap items-center gap-3 p-3">
+                              {a.image && <img src={a.image.url} alt="" className="h-14 w-14 shrink-0 rounded-btn object-cover" />}
+                              <div className="min-w-32 flex-1"><p className="font-semibold">{a.name}</p><p className="text-small text-ink-600">{fmt(a.price_minor)}</p></div>
                               <QtyStepper value={q} max={a.max_qty} onChange={(n) => setAddonQty(a.id, n)} label={a.name}
                                 decLabel={`${t("common.remove")} ${a.name}`} incLabel={`${t("common.add")} ${a.name}`} />
                             </li>
@@ -436,7 +436,7 @@ export default function Checkout({ draftId }: { draftId: string }) {
                     <legend className="mb-2 text-h3">{t("checkout.paymentMode")}</legend>
                     {(["full", ...(draft.seva!.autopay_allowed ? ["autopay" as const] : [])] as const).map((m) => (
                       <label key={m} className={cx("mb-2 flex min-h-12 cursor-pointer items-start gap-3 rounded-card p-4",
-                        mode === m ? "pp-foil-border" : "border border-marble-200 bg-surface")}>
+                        mode === m ? "pp-foil-border" : "border border-gold-line bg-surface")}>
                         <input type="radio" name="mode" className="mt-1.5 h-5 w-5 accent-[var(--gold-600)]" checked={mode === m} onChange={() => setMode(m)} />
                         <span><span className="block font-semibold">{m === "full"
                           ? t("puja.payFull", { amount: fmt(draft.seva!.full_total_minor) })

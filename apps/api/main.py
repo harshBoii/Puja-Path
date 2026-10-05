@@ -1,7 +1,10 @@
+import asyncio
+import contextlib
+import hmac
 from contextlib import asynccontextmanager
 
 import sentry_sdk
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.staticfiles import StaticFiles
 
 from config import settings
@@ -27,7 +30,16 @@ if settings.sentry_dsn:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings.local_media_dir.mkdir(parents=True, exist_ok=True)
+    scheduler = None
+    if settings.jobs_mode == "inline":
+        from services.tasks import run_scheduler
+
+        scheduler = asyncio.create_task(run_scheduler())
     yield
+    if scheduler:
+        scheduler.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await scheduler
 
 
 app = FastAPI(title=f"{settings.brand} API", version="1.0.0", lifespan=lifespan)
@@ -51,4 +63,15 @@ app.mount("/media", StaticFiles(directory=settings.local_media_dir), name="media
 
 @app.get("/healthz")
 async def healthz():
-    return {"ok": True}
+    return {"ok": True, "jobs_mode": settings.jobs_mode}
+
+
+@app.post("/v1/internal/cron", include_in_schema=False)
+async def cron_tick(x_cron_secret: str = Header(default="")):
+    """Runs every periodic job once, for hosts where the API cannot keep a scheduler alive (e.g. serverless).
+    Disabled unless CRON_SECRET is set."""
+    if not settings.cron_secret or not hmac.compare_digest(x_cron_secret, settings.cron_secret):
+        raise HTTPException(404, "not_found")
+    from services.tasks import run_all_once
+
+    return await run_all_once()

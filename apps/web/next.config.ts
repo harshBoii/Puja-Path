@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
-const API_URL = process.env.API_URL ?? "http://localhost:8000";
+import { apiBaseUrl } from "./lib/api-url";
+
+const API_URL = apiBaseUrl();
 const isStaging = process.env.APP_ENV === "staging";
 
 const config: NextConfig = {

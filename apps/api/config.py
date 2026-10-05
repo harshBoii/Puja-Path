@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -13,7 +14,10 @@ class Settings(BaseSettings):
     app_env: str = "development"  # development | test | staging | production
 
     database_url: str = "postgresql://postgres:postgres@localhost:5432/pujapath"
-    redis_url: str = "redis://localhost:6379/0"
+    redis_url: str = "redis://localhost:6379/0"  # only used when jobs_mode == "worker"
+    # Background jobs: "inline" (inside the API, no Redis), "worker" (Arq + Redis), "manual" (tests only).
+    jobs_mode: Literal["inline", "worker", "manual"] = "inline"
+    cron_secret: str = ""  # enables POST /v1/internal/cron for external schedulers (serverless hosts)
     jwt_secret: str = "change-me"
     revalidate_secret: str = "change-me"
     next_public_site_url: str = "http://localhost:3000"

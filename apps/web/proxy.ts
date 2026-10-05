@@ -4,15 +4,6 @@ import { CURRENCY_COOKIE, DEFAULT_LOCALE, LOCALE_COOKIE, isLocale } from "@/i18n
 
 const YEAR = 60 * 60 * 24 * 365;
 
-function fromAcceptLanguage(header: string | null): string | null {
-  if (!header) return null;
-  for (const part of header.split(",")) {
-    const code = part.split(";")[0].trim().slice(0, 2).toLowerCase();
-    if (isLocale(code)) return code;
-  }
-  return null;
-}
-
 function basicAuthOk(req: NextRequest): boolean {
   const expected = process.env.STAGING_BASIC_AUTH; // "user:pass"
   if (!expected) return true;
@@ -35,24 +26,16 @@ export function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // English by default. The cookie is only set when the visitor picks a language from the header dropdown;
+  // a shared link in another language still opens in that language.
   const cookieLocale = req.cookies.get(LOCALE_COOKIE)?.value;
   const first = pathname.split("/")[1];
-  let res: NextResponse;
-
-  if (pathname === "/") {
-    // Returning visitor: straight to their language. First visit: full-screen language picker.
-    if (isLocale(cookieLocale)) return NextResponse.redirect(new URL(`/${cookieLocale}${search}`, req.url));
-    res = NextResponse.next();
-  } else if (!isLocale(first)) {
-    const target = (isLocale(cookieLocale) && cookieLocale)
-      || fromAcceptLanguage(req.headers.get("accept-language")) || DEFAULT_LOCALE;
-    return NextResponse.redirect(new URL(`/${target}${pathname}${search}`, req.url));
-  } else {
-    res = NextResponse.next();
-    if (!isLocale(cookieLocale)) {
-      res.cookies.set(LOCALE_COOKIE, first, { maxAge: YEAR, path: "/", sameSite: "lax" });
-    }
+  if (!isLocale(first)) {
+    const target = isLocale(cookieLocale) ? cookieLocale : DEFAULT_LOCALE;
+    const rest = pathname === "/" ? "" : pathname;
+    return NextResponse.redirect(new URL(`/${target}${rest}${search}`, req.url));
   }
+  const res = NextResponse.next();
 
   if (!req.cookies.get(CURRENCY_COOKIE)) {
     // Visitors outside India see USD by default (they can switch). Unknown country -> INR.

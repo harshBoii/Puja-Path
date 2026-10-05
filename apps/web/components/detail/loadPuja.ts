@@ -3,9 +3,10 @@ import "server-only";
 import { cookies } from "next/headers";
 
 import { getPuja } from "@/lib/api";
+import { apiBaseUrl } from "@/lib/api-url";
 import type { PujaDetail } from "@/lib/types";
 
-const API_URL = process.env.API_URL ?? "http://localhost:8000";
+const API_URL = apiBaseUrl();
 
 /** Published data (cached, tagged) — or, for staff with ?preview=1, the unpublished draft (uncached). */
 export async function loadPuja(locale: string, id: number, preview: boolean): Promise<PujaDetail | null> {
