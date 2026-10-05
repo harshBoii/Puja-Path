@@ -9,6 +9,9 @@ os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL",
                                             "postgresql://postgres@localhost:55432/pujapath_test")
 os.environ["APP_ENV"] = "test"
 os.environ["JOBS_MODE"] = "manual"  # tests run jobs explicitly; nothing runs in the background
+# never touch real storage/video hosting from tests (the dev .env may hold R2 / Stream credentials)
+for k in ("R2_ACCOUNT_ID", "R2_BUCKET", "R2_PUBLIC_BASE_URL", "CF_STREAM_ACCOUNT_ID", "CF_STREAM_API_TOKEN"):
+    os.environ[k] = ""
 for k in ("MESSAGING_PROVIDER", "PAYMENT_PROVIDER", "SHIPPING_PROVIDER", "SMS_OTP_PROVIDER"):
     os.environ[k] = "fake"
 os.environ["WEB_INTERNAL_URL"] = "http://127.0.0.1:9"  # revalidation calls fail fast and are ignored

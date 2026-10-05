@@ -1,0 +1,376 @@
+{
+  "puja:rudrabhishekam": [
+    {
+      "key": "photos/rudrabhishekam-1.webp",
+      "alt": {
+        "en": "A Shiva lingam decorated with marigolds",
+        "hi": "गेंदे के फूलों से सजा शिवलिंग",
+        "ta": "சாமந்திப் பூக்களால் அலங்கரிக்கப்பட்ட சிவலிங்கம்",
+        "te": "బంతి పూలతో అలంకరించిన శివలింగం"
+      },
+      "credit": {
+        "photographer": "\"Beyond India by Shubham Thakur\"",
+        "url": "https://www.pexels.com/photo/shiva-lingam-adorned-with-flowers-in-raipur-39237032/",
+        "source": "Pexels"
+      }
+    },
+    {
+      "key": "photos/rudrabhishekam-2.webp",
+      "alt": {
+        "en": "Brass temple bells",
+        "hi": "पीतल की मंदिर घंटियाँ",
+        "ta": "பித்தளைக் கோவில் மணிகள்",
+        "te": "ఇత్తడి ఆలయ గంటలు"
+      },
+      "credit": {
+        "photographer": "Prakash Magar",
+        "url": "https://www.pexels.com/photo/four-gray-hanged-bells-703232/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "puja:navagraha-shanti-homam": [
+    {
+      "key": "photos/navagraha-shanti-homam-1.webp",
+      "alt": {
+        "en": "A sacred fire ritual",
+        "hi": "पवित्र अग्नि अनुष्ठान",
+        "ta": "புனித அக்னிச் சடங்கு",
+        "te": "పవిత్ర అగ్ని క్రతువు"
+      },
+      "credit": {
+        "photographer": "yashwant kashyap",
+        "url": "https://www.pexels.com/photo/traditional-hindu-havan-ceremony-setup-with-fire-ritual-37531063/",
+        "source": "Pexels"
+      }
+    },
+    {
+      "key": "photos/navagraha-shanti-homam-2.webp",
+      "alt": {
+        "en": "A lit oil lamp",
+        "hi": "जलता हुआ दीपक",
+        "ta": "ஏற்றப்பட்ட எண்ணெய் விளக்கு",
+        "te": "వెలిగించిన నూనె దీపం"
+      },
+      "credit": {
+        "photographer": "Sayantan Das",
+        "url": "https://www.pexels.com/photo/burning-candles-10182772/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "puja:pitru-tarpan": [
+    {
+      "key": "photos/pitru-tarpan-1.webp",
+      "alt": {
+        "en": "Steps of a ghat on the river",
+        "hi": "नदी किनारे घाट की सीढ़ियाँ",
+        "ta": "நதிக்கரைப் படித்துறையின் படிகள்",
+        "te": "నది ఒడ్డున ఘాట్ మెట్లు"
+      },
+      "credit": {
+        "photographer": "Adinath  Gilande",
+        "url": "https://www.pexels.com/photo/boat-near-buildings-in-town-18435639/",
+        "source": "Pexels"
+      }
+    },
+    {
+      "key": "photos/pitru-tarpan-2.webp",
+      "alt": {
+        "en": "An evening aarti on the river",
+        "hi": "नदी पर संध्या आरती",
+        "ta": "நதிக்கரையில் மாலை ஆரத்தி",
+        "te": "నదిపై సాయంత్రం హారతి"
+      },
+      "credit": {
+        "photographer": "Soubhagya Maharana",
+        "url": "https://www.pexels.com/photo/people-during-ganga-aarti-ceremony-18887232/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "puja:lakshmi-kubera-puja": [
+    {
+      "key": "photos/lakshmi-kubera-puja-1.webp",
+      "alt": {
+        "en": "A lotus flower",
+        "hi": "कमल का फूल",
+        "ta": "தாமரைப் பூ",
+        "te": "కమల పుష్పం"
+      },
+      "credit": {
+        "photographer": "HỨA QUANG THỚI",
+        "url": "https://www.pexels.com/photo/vibrant-pink-lotus-flower-in-vietnamese-pond-33059564/",
+        "source": "Pexels"
+      }
+    },
+    {
+      "key": "photos/lakshmi-kubera-puja-2.webp",
+      "alt": {
+        "en": "A puja plate with offerings",
+        "hi": "अर्पण सहित पूजा की थाली",
+        "ta": "காணிக்கைகளுடன் பூஜைத் தட்டு",
+        "te": "సమర్పణలతో పూజా పళ్లెం"
+      },
+      "credit": {
+        "photographer": "Vijay Krishnawat",
+        "url": "https://www.pexels.com/photo/pooja-articles-on-pooja-thali-during-hindu-rituals-14855916/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "puja:rahu-ketu-shanti-puja": [
+    {
+      "key": "photos/rahu-ketu-shanti-puja-1.webp",
+      "alt": {
+        "en": "A sacred fire ritual",
+        "hi": "पवित्र अग्नि अनुष्ठान",
+        "ta": "புனித அக்னிச் சடங்கு",
+        "te": "పవిత్ర అగ్ని క్రతువు"
+      },
+      "credit": {
+        "photographer": "Yogendra  Singh",
+        "url": "https://www.pexels.com/photo/men-performing-on-a-stage-18215012/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "puja:satyanarayana-vratam": [
+    {
+      "key": "photos/satyanarayana-vratam-1.webp",
+      "alt": {
+        "en": "Flower offerings",
+        "hi": "फूलों का अर्पण",
+        "ta": "மலர் காணிக்கைகள்",
+        "te": "పూల సమర్పణలు"
+      },
+      "credit": {
+        "photographer": "Lara Jameson",
+        "url": "https://www.pexels.com/photo/a-person-holding-petals-8887142/",
+        "source": "Pexels"
+      }
+    },
+    {
+      "key": "photos/satyanarayana-vratam-2.webp",
+      "alt": {
+        "en": "A puja plate with offerings",
+        "hi": "अर्पण सहित पूजा की थाली",
+        "ta": "காணிக்கைகளுடன் பூஜைத் தட்டு",
+        "te": "సమర్పణలతో పూజా పళ్లెం"
+      },
+      "credit": {
+        "photographer": "aksinfo7 universe",
+        "url": "https://www.pexels.com/photo/traditional-indian-puja-thali-with-offerings-38109564/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "puja:shani-chadhava": [
+    {
+      "key": "photos/shani-chadhava-1.webp",
+      "alt": {
+        "en": "A lit oil lamp",
+        "hi": "जलता हुआ दीपक",
+        "ta": "ஏற்றப்பட்ட எண்ணெய் விளக்கு",
+        "te": "వెలిగించిన నూనె దీపం"
+      },
+      "credit": {
+        "photographer": "AJAY KUMAR",
+        "url": "https://www.pexels.com/photo/illuminated-traditional-oil-lamps-at-night-33853971/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "puja:mangalavara-hanuman-seva": [
+    {
+      "key": "photos/mangalavara-hanuman-seva-1.webp",
+      "alt": {
+        "en": "Brass temple bells",
+        "hi": "पीतल की मंदिर घंटियाँ",
+        "ta": "பித்தளைக் கோவில் மணிகள்",
+        "te": "ఇత్తడి ఆలయ గంటలు"
+      },
+      "credit": {
+        "photographer": "Roman Saienko",
+        "url": "https://www.pexels.com/photo/temple-bells-hanging-in-mathura-india-29651431/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "puja:nitya-deepa-seva": [
+    {
+      "key": "photos/nitya-deepa-seva-1.webp",
+      "alt": {
+        "en": "A lit oil lamp",
+        "hi": "जलता हुआ दीपक",
+        "ta": "ஏற்றப்பட்ட எண்ணெய் விளக்கு",
+        "te": "వెలిగించిన నూనె దీపం"
+      },
+      "credit": {
+        "photographer": "Lara Jameson",
+        "url": "https://www.pexels.com/photo/lit-candlewicks-over-embroidered-cloth-8887279/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "temple:sri-mallikarjuna-swamy-temple-vijayawada": [
+    {
+      "key": "photos/sri-mallikarjuna-swamy-temple-vijayawada-1.webp",
+      "alt": {
+        "en": "A temple gopuram",
+        "hi": "मंदिर का गोपुरम",
+        "ta": "கோவில் கோபுரம்",
+        "te": "ఆలయ గోపురం"
+      },
+      "credit": {
+        "photographer": "Jayanth Muppaneni",
+        "url": "https://www.pexels.com/photo/vibrant-gopuram-of-rameswaram-temple-in-india-34148386/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "temple:navagraha-yagashala-kanchipuram": [
+    {
+      "key": "photos/navagraha-yagashala-kanchipuram-1-12430842.webp",
+      "alt": {
+        "en": "A sacred fire ritual",
+        "hi": "पवित्र अग्नि अनुष्ठान",
+        "ta": "புனித அக்னிச் சடங்கு",
+        "te": "పవిత్ర అగ్ని క్రతువు"
+      },
+      "credit": {
+        "photographer": "Mir Rajjak",
+        "url": "https://www.pexels.com/photo/close-up-shot-of-a-burning-fire-12430842/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "temple:dashashwamedh-ghat-varanasi": [
+    {
+      "key": "photos/dashashwamedh-ghat-varanasi-1.webp",
+      "alt": {
+        "en": "Steps of a ghat on the river",
+        "hi": "नदी किनारे घाट की सीढ़ियाँ",
+        "ta": "நதிக்கரைப் படித்துறையின் படிகள்",
+        "te": "నది ఒడ్డున ఘాట్ మెట్లు"
+      },
+      "credit": {
+        "photographer": "Patricia Luquet",
+        "url": "https://www.pexels.com/photo/boats-on-river-in-town-17869831/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "temple:sri-mahalakshmi-temple-hyderabad": [
+    {
+      "key": "photos/sri-mahalakshmi-temple-hyderabad-1.webp",
+      "alt": {
+        "en": "A temple shrine",
+        "hi": "मंदिर का गर्भगृह",
+        "ta": "கோவில் சன்னதி",
+        "te": "ఆలయ సన్నిధి"
+      },
+      "credit": {
+        "photographer": "Roman Saienko",
+        "url": "https://www.pexels.com/photo/ornate-temple-corridor-in-tiruchirappalli-india-37678479/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "addon:addon-oil": [
+    {
+      "key": "photos/addon-oil-1-8819384.webp",
+      "alt": {
+        "en": "Sesame oil",
+        "hi": "तिल का तेल",
+        "ta": "நல்லெண்ணெய்",
+        "te": "నువ్వుల నూనె"
+      },
+      "credit": {
+        "photographer": "Yan Krukau",
+        "url": "https://www.pexels.com/photo/a-person-holding-a-brass-bowl-with-flowers-and-lighted-candle-8819384/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "addon:addon-cloth": [
+    {
+      "key": "photos/addon-cloth-1.webp",
+      "alt": {
+        "en": "Black cloth",
+        "hi": "काला वस्त्र",
+        "ta": "கருப்பு வஸ்திரம்",
+        "te": "నల్ల వస్త్రం"
+      },
+      "credit": {
+        "photographer": "https://kaboompics.com/",
+        "url": "https://www.pexels.com/photo/close-up-of-a-black-fabric-4863008/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "addon:addon-til": [
+    {
+      "key": "photos/addon-til-1.webp",
+      "alt": {
+        "en": "Black sesame seeds",
+        "hi": "काले तिल",
+        "ta": "கருப்பு எள்",
+        "te": "నల్ల నువ్వులు"
+      },
+      "credit": {
+        "photographer": "Ivan S",
+        "url": "https://www.pexels.com/photo/close-up-shot-of-sesame-seeds-8951049/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "addon:addon-diya": [
+    {
+      "key": "photos/addon-diya-1.webp",
+      "alt": {
+        "en": "A lit oil lamp",
+        "hi": "जलता हुआ दीपक",
+        "ta": "ஏற்றப்பட்ட எண்ணெய் விளக்கு",
+        "te": "వెలిగించిన నూనె దీపం"
+      },
+      "credit": {
+        "photographer": "Ravi Kant",
+        "url": "https://www.pexels.com/photo/traditional-oil-lamps-for-diwali-celebration-34428307/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "addon:addon-flowers": [
+    {
+      "key": "photos/addon-flowers-1.webp",
+      "alt": {
+        "en": "Flower offerings",
+        "hi": "फूलों का अर्पण",
+        "ta": "மலர் காணிக்கைகள்",
+        "te": "పూల సమర్పణలు"
+      },
+      "credit": {
+        "photographer": "Davis Arenas",
+        "url": "https://www.pexels.com/photo/close-up-shot-of-yellow-flowers-14304140/",
+        "source": "Pexels"
+      }
+    }
+  ],
+  "addon:addon-coconut": [
+    {
+      "key": "photos/addon-coconut-1.webp",
+      "alt": {
+        "en": "A coconut",
+        "hi": "नारियल",
+        "ta": "தேங்காய்",
+        "te": "కొబ్బరికాయ"
+      },
+      "credit": {
+        "photographer": "Tuan Vy",
+        "url": "https://www.pexels.com/photo/street-vendor-preparing-fresh-coconuts-32831497/",
+        "source": "Pexels"
+      }
+    }
+  ]
+}

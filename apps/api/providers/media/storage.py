@@ -23,10 +23,16 @@ def use_r2() -> bool:
     return bool(settings.r2_account_id and settings.r2_bucket)
 
 
+def _r2_key(key: str) -> str:
+    """Object name in the bucket. Stored keys stay prefix-free; the prefix only applies inside R2."""
+    return f"{settings.r2_key_prefix}{key}"
+
+
 def put_file(local_path: Path, key: str, content_type: str) -> None:
     if use_r2():
         # upload_file switches to multipart automatically for large videos.
-        _r2_client().upload_file(str(local_path), settings.r2_bucket, key, ExtraArgs={"ContentType": content_type})
+        _r2_client().upload_file(str(local_path), settings.r2_bucket, _r2_key(key),
+                                 ExtraArgs={"ContentType": content_type, "CacheControl": "public, max-age=31536000"})
         return
     dest = settings.local_media_dir / key
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -38,6 +44,8 @@ def public_url(key: str | None) -> str | None:
         return None
     if key.startswith("http://") or key.startswith("https://") or key.startswith("/"):
         return key
+    if use_r2():
+        return f"{settings.media_public_base.rstrip('/')}/{_r2_key(key)}"
     return f"{settings.media_public_base.rstrip('/')}/{key}"
 
 
@@ -45,7 +53,7 @@ def fetch_to_local(key: str) -> Path:
     """Returns a local path for processing (ffmpeg). Caller must not delete local-mode files."""
     if use_r2():
         tmp = Path(tempfile.mkdtemp()) / Path(key).name
-        _r2_client().download_file(settings.r2_bucket, key, str(tmp))
+        _r2_client().download_file(settings.r2_bucket, _r2_key(key), str(tmp))
         return tmp
     return settings.local_media_dir / key
 
@@ -53,7 +61,7 @@ def fetch_to_local(key: str) -> Path:
 def exists(key: str) -> bool:
     if use_r2():
         try:
-            _r2_client().head_object(Bucket=settings.r2_bucket, Key=key)
+            _r2_client().head_object(Bucket=settings.r2_bucket, Key=_r2_key(key))
             return True
         except Exception:  # noqa: BLE001  (any client error means "not there")
             return False

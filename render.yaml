@@ -37,6 +37,18 @@ services:
         sync: false   # same as NEXT_PUBLIC_SITE_URL
       - key: API_PUBLIC_URL
         sync: false   # https://<this service>.onrender.com
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET
+        sync: false
+      - key: R2_PUBLIC_BASE_URL
+        sync: false
+      - key: R2_KEY_PREFIX
+        value: pujapath/   # the bucket is shared; Puja Path files live under this folder
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD

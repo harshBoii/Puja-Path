@@ -18,10 +18,16 @@
   --tulsi-600: #3e6b3a;
   --gold-line: #dcc68a; /* decorative gold borders on cards, chips, header, panels */
   --gold-input: #9c7a22; /* form-field borders: 3:1 against white (WCAG 1.4.11) */
-  --marble-texture: url("/images/marble-white.webp");
-  /* polished-stone highlight laid over marble sections */
-  --marble-sheen: linear-gradient(115deg, rgba(255, 255, 255, 0) 15%, rgba(255, 255, 255, 0.85) 42%,
-      rgba(255, 255, 255, 0.15) 58%, rgba(255, 255, 255, 0) 75%);
+  /* Plain shiny white: soft highlights over a white base, pure CSS (crisp at any size, nothing to download). */
+  --page-shine:
+    radial-gradient(1100px 520px at 12% -8%, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0) 62%),
+    radial-gradient(900px 480px at 100% 4%, rgba(246, 237, 208, 0.28), rgba(255, 255, 255, 0) 60%),
+    linear-gradient(180deg, #ffffff 0%, #f9f9f7 55%, #f6f6f3 100%);
+  /* polished highlight for hero/footer sections */
+  --section-shine:
+    linear-gradient(115deg, rgba(255, 255, 255, 0) 18%, rgba(255, 255, 255, 0.95) 44%, rgba(255, 255, 255, 0.2) 58%,
+      rgba(255, 255, 255, 0) 74%),
+    linear-gradient(180deg, #ffffff 0%, #f6f5f1 100%);
   --whatsapp-green: #25d366; /* brand glyph only, never text */
   /* decorative only: borders, ornaments, display text 32px and up */
   --gold-foil: linear-gradient(135deg, #8c6a1f 0%, #d4af37 40%, #f3e3a3 55%, #b8922e 75%, #8c6a1f 100%);
@@ -79,8 +85,7 @@
   }
   body {
     background-color: var(--marble-50);
-    background-image: var(--marble-texture);
-    background-size: 1200px;
+    background-image: var(--page-shine);
     color: var(--ink-900);
     font-family: var(--font-body);
     font-size: var(--text-body);
@@ -137,8 +142,7 @@
     position: absolute;
     inset: 0;
     z-index: -1;
-    background-image: var(--marble-sheen), var(--marble-texture);
-    background-size: 100% 100%, 1200px;
+    background-image: var(--section-shine);
     pointer-events: none;
   }
   .pp-foil-text {

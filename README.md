@@ -19,6 +19,17 @@ cd ../web && npx -y pnpm@10 install && npx next dev -p 3000   # set API_URL in a
 ```
 The admin login comes from `ADMIN_EMAIL`/`ADMIN_PASSWORD` in `apps/api/.env`. TOTP is enrolled on first sign-in.
 
+## Demo photos
+`apps/api/scripts/fetch_images.py` replaces the SVG demo art with Pexels photos (alt text in all four languages,
+photographer credits in `apps/web/public/images/photos/CREDITS.json`). With the `R2_*` variables set, it uploads to
+Cloudflare R2; otherwise it saves into `apps/web/public/images/photos/`.
+```
+cd apps/api
+PEXELS_API_KEY=... uv run python scripts/fetch_images.py   # download, writes seed_images.json
+uv run python scripts/fetch_images.py --apply              # update the database (DATABASE_URL)
+```
+These are stand-ins: replace them with partner-temple photography before launch.
+
 ## Deploy
 - **Backend on Render:** New > Blueprint, pick this repo (`render.yaml`). It pins Python 3.12, installs
   `apps/api/requirements.txt`, runs migrations on start, and uses `JOBS_MODE=inline` (no Redis or worker).

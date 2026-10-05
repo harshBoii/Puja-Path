@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     r2_secret_access_key: str = ""
     r2_bucket: str = ""
     r2_public_base_url: str = ""
+    r2_key_prefix: str = ""  # e.g. "pujapath/" when the bucket is shared with another app
+    pexels_api_key: str = ""  # only for scripts/fetch_images.py
     cf_stream_account_id: str = ""
     cf_stream_api_token: str = ""
     cf_stream_signing_key_id: str = ""

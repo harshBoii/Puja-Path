@@ -75,7 +75,7 @@ async def temples(db: AsyncSession = Depends(get_db), _: StaffUser = Depends(edi
 @router.post("/temples", status_code=201)
 async def create_temple(body: TempleIn, db: AsyncSession = Depends(get_db), staff: StaffUser = Depends(editor)):
     for ph in body.photos:
-        if not ph.get("taken_on"):
+        if not ph.get("taken_on") and not ph.get("credit"):  # credited stock photos carry no shoot date
             raise HTTPException(400, "photo_requires_date_taken")
     name = next((t.name for t in body.translations if t.locale == "en"), body.translations[0].name
                 if body.translations else body.city)
@@ -96,7 +96,7 @@ async def update_temple(temple_id: int, body: TempleIn, db: AsyncSession = Depen
     if t is None:
         raise HTTPException(404, "not_found")
     for ph in body.photos:
-        if not ph.get("taken_on"):
+        if not ph.get("taken_on") and not ph.get("credit"):  # credited stock photos carry no shoot date
             raise HTTPException(400, "photo_requires_date_taken")
     for f in ("city", "state", "lat", "lng", "presiding_deity", "venue_type", "photos"):
         setattr(t, f, getattr(body, f))

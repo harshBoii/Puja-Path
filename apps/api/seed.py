@@ -4,8 +4,10 @@ Usage: uv run python seed.py [--catalog]   (catalog is skipped if pujas already 
 """
 
 import asyncio
+import json
 import sys
 from datetime import datetime, time, timedelta
+from pathlib import Path
 
 from sqlalchemy import func, select
 
@@ -39,6 +41,15 @@ from services.publish import validate_puja
 
 LOCALES = ("en", "hi", "ta", "te")
 
+# Real photos from scripts/fetch_images.py, when present (otherwise the SVG demo art).
+_MANIFEST = Path(__file__).resolve().parent / "seed_images.json"
+PHOTOS: dict = json.loads(_MANIFEST.read_text()) if _MANIFEST.exists() else {}
+
+
+def _photos(target: str) -> list[dict] | None:
+    items = PHOTOS.get(target)
+    return [{"key": i["key"], "alt": i["alt"], "credit": i["credit"]} for i in items] if items else None
+
 
 async def seed_base(db) -> None:
     await site_config.seed_defaults(db)
@@ -66,7 +77,8 @@ async def seed_catalog(db) -> None:
     temples = []
     for t in TEMPLES:
         temple = Temple(slug=t["slug"], city=t["city"], state=t["state"], lat=t["lat"], lng=t["lng"],
-                        presiding_deity=t["presiding_deity"], venue_type=VenueType(t["venue_type"]), photos=t["photos"])
+                        presiding_deity=t["presiding_deity"], venue_type=VenueType(t["venue_type"]),
+                        photos=_photos(f"temple:{t['slug']}") or t["photos"])
         temple.translations = [TempleTranslation(locale=loc, name=v[0], address=v[1], history_md=v[2])
                                for loc, v in t["tr"].items()]
         db.add(temple)
@@ -82,7 +94,7 @@ async def seed_catalog(db) -> None:
             priests_count=spec["priests_count"], sankalp_language=spec["sankalp_language"],
             requires_nakshatra=spec["requires_nakshatra"], video_sla_hours=spec.get("video_sla_hours"),
             deliverables=spec["deliverables"], prasad_box=spec["prasad_box"],
-            images=[{"key": IMG.format(i), "alt": spec["image_alt"]} for i in spec["images"]],
+            images=_photos(f"puja:{spec['slug']}") or [{"key": IMG.format(i), "alt": spec["image_alt"]} for i in spec["images"]],
             status=PublishStatus.draft,
         )
         locales = spec.get("locales", LOCALES)
@@ -94,7 +106,9 @@ async def seed_catalog(db) -> None:
                            price_usd_minor=usd, active=True))
         names = {**ADDON_NAMES, **spec.get("addon_names", {})}
         for key, inr, usd, max_qty, ships_home, _alt in spec["addons"]:
-            item = AddonItem(puja_id=p.id, image_key=IMG.format(key), price_inr_minor=inr, price_usd_minor=usd,
+            photo = _photos(f"addon:{key}")
+            item = AddonItem(puja_id=p.id, image_key=photo[0]["key"] if photo else IMG.format(key),
+                             price_inr_minor=inr, price_usd_minor=usd,
                              max_qty=max_qty, ships_home=ships_home, active=True)
             item.translations = [AddonItemTranslation(locale=loc, name=names[key][loc]) for loc in LOCALES]
             db.add(item)

@@ -2,7 +2,6 @@ import "../globals.css";
 
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
-import { preload } from "react-dom";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 
@@ -49,8 +48,6 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   // Only the namespaces client components use go to the browser (keeps legal/marketing copy out of the payload).
   const clientMessages = Object.fromEntries(CLIENT_NAMESPACES.map((ns) => [ns, messages[ns]]));
   const fonts = fontsFor(locale);
-  // The marble texture sits behind the hero (often the LCP element); preload so CSS does not discover it late.
-  preload("/images/marble-white.webp", { as: "image", type: "image/webp" });
   return (
     <html lang={locale} className={fonts.className} style={fonts.style} suppressHydrationWarning>
       <head>
