@@ -1,5 +1,5 @@
 "use client";
-import { EmptyState, IconChevronRight, StatusChip } from "@pujapath/ui";
+import { AsyncButton, DiyaLoader, EmptyState, IconChevronRight, StatusChip } from "@pujapath/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
@@ -26,6 +26,7 @@ function Inner({ me, reload }: { me: Me; reload: () => void }) {
   const [family, setFamily] = useState<Family[]>([]);
   const [wish, setWish] = useState<{ id: number; title: string; href: string }[]>([]);
   const [saved, setSaved] = useState(false);
+  const [submitting, setSubmitting] = useState<"profile" | "member" | null>(null);
 
   useEffect(() => {
     api<Booking[]>(`/account/bookings?locale=${locale}`).then(setBookings).catch(() => setBookings([]));
@@ -41,8 +42,11 @@ function Inner({ me, reload }: { me: Me; reload: () => void }) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const newLocale = String(fd.get("locale"));
-    await api("/account", { method: "PUT", json: { name: fd.get("name") || null, email: fd.get("email") || null,
-      locale: newLocale, marketing_opt_in: fd.get("marketing") === "on" } });
+    setSubmitting("profile");
+    try {
+      await api("/account", { method: "PUT", json: { name: fd.get("name") || null, email: fd.get("email") || null,
+        locale: newLocale, marketing_opt_in: fd.get("marketing") === "on" } });
+    } finally { setSubmitting(null); }
     setSaved(true);
     reload();
     if (newLocale !== locale) switchLocale(newLocale as Locale, window.location.pathname);
@@ -51,8 +55,12 @@ function Inner({ me, reload }: { me: Me; reload: () => void }) {
     e.preventDefault();
     const form = e.currentTarget;
     const fd = new FormData(form);
-    const m = await api<Family>("/account/family", { method: "POST", json: { name: fd.get("name"), relation: fd.get("relation") || null,
-      gotra: fd.get("gotra") || null, nakshatra: fd.get("nakshatra") || null } });
+    setSubmitting("member");
+    let m: Family;
+    try {
+      m = await api<Family>("/account/family", { method: "POST", json: { name: fd.get("name"), relation: fd.get("relation") || null,
+        gotra: fd.get("gotra") || null, nakshatra: fd.get("nakshatra") || null } });
+    } finally { setSubmitting(null); }
     setFamily((f) => [...f, m]);
     form.reset();
   };
@@ -61,9 +69,9 @@ function Inner({ me, reload }: { me: Me; reload: () => void }) {
     <div className="space-y-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-h1">{t("account.title")}</h1>
-        <button type="button" className="pp-btn pp-btn-secondary" onClick={async () => { await api("/auth/logout", { method: "POST" }); reload(); }}>
+        <AsyncButton className="pp-btn pp-btn-secondary" onClick={async () => { await api("/auth/logout", { method: "POST" }); reload(); }}>
           {t("account.logout")}
-        </button>
+        </AsyncButton>
       </div>
       <nav className="grid gap-3 sm:grid-cols-2">
         <Link href="/account/subscriptions" className="pp-card flex min-h-16 items-center justify-between px-4 text-ink-900 no-underline">
@@ -76,7 +84,7 @@ function Inner({ me, reload }: { me: Me; reload: () => void }) {
 
       <section aria-labelledby="bk">
         <h2 id="bk" className="mb-3 text-h2">{t("account.bookings")}</h2>
-        {bookings === null ? <p>{t("common.loading")}</p> : bookings.length === 0 ? (
+        {bookings === null ? <DiyaLoader label={t("common.loading")} className="py-8" /> : bookings.length === 0 ? (
           <EmptyState title={t("account.bookingsEmpty")} action={<Link href="/pujas" className="pp-btn pp-btn-primary">{t("common.viewAll")}</Link>} />
         ) : (
           <ul className="space-y-3">
@@ -112,7 +120,7 @@ function Inner({ me, reload }: { me: Me; reload: () => void }) {
             <input name="marketing" type="checkbox" className="h-6 w-6 accent-[var(--gold-600)]" defaultChecked={me.marketing_opt_in} />
             {t("account.marketing")}
           </label>
-          <button className="pp-btn pp-btn-primary">{t("common.save")}</button>
+          <button className="pp-btn pp-btn-primary" aria-busy={submitting === "profile" || undefined}>{t("common.save")}</button>
           {saved && <span role="status" className="ml-3 text-tulsi-600">{t("common.saved")}</span>}
         </form>
       </section>
@@ -124,10 +132,10 @@ function Inner({ me, reload }: { me: Me; reload: () => void }) {
           {family.map((m) => (
             <li key={m.id} className="pp-card flex items-center justify-between gap-3 p-3">
               <span><span className="font-semibold">{m.name}</span> <span className="text-small text-ink-600">{[m.relation, m.gotra, m.nakshatra].filter(Boolean).join(" · ")}</span></span>
-              <button type="button" className="pp-link min-h-12" onClick={async () => {
+              <AsyncButton className="pp-link min-h-12" onClick={async () => {
                 await api(`/account/family/${m.id}`, { method: "DELETE" });
                 setFamily((f) => f.filter((x) => x.id !== m.id));
-              }}>{t("common.remove")}</button>
+              }}>{t("common.remove")}</AsyncButton>
             </li>
           ))}
         </ul>
@@ -137,7 +145,7 @@ function Inner({ me, reload }: { me: Me; reload: () => void }) {
           <label className="block"><span className="mb-1 block text-small">{t("checkout.relation")}</span><input name="relation" className="pp-input" /></label>
           <label className="block"><span className="mb-1 block text-small">{t("checkout.gotra")}</span><input name="gotra" className="pp-input" /></label>
           <label className="block"><span className="mb-1 block text-small">{t("checkout.nakshatra")}</span><input name="nakshatra" className="pp-input" /></label>
-          <button className="pp-btn pp-btn-secondary sm:col-span-2">{t("common.add")}</button>
+          <button className="pp-btn pp-btn-secondary sm:col-span-2" aria-busy={submitting === "member" || undefined}>{t("common.add")}</button>
         </form>
       </section>
 

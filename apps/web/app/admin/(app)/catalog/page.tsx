@@ -1,4 +1,5 @@
 "use client";
+import { DiyaLoader } from "@pujapath/ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -34,7 +35,7 @@ export default function Catalog() {
           <button className="pp-btn pp-btn-primary sm:col-span-3 sm:w-fit" disabled={busy}>Create draft</button>
         </form>
       </Card>
-      {!data ? <p>Loading…</p> : (
+      {!data ? <DiyaLoader label="Loading…" /> : (
         <Table head={["Title", "Kind", "Temple", "Status", "Locales (published)"]} rows={data.map((p) => [
           <Link key="t" href={`/admin/catalog/${p.id}`} className="pp-link font-semibold">{p.title}</Link>, p.kind, p.temple,
           <Badge key="s" tone={statusTone(p.status)}>{p.status}</Badge>,

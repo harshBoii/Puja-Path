@@ -34,7 +34,7 @@ export default function LoadMore({ endpoint, query, initial, labels }: {
       </ul>
       <div className="mt-8 text-center" aria-live="polite">
         {done ? <p className="text-ink-600">{labels.done}</p> : (
-          <button type="button" className="pp-btn pp-btn-secondary" onClick={more} disabled={loading}>{labels.more}</button>
+          <button type="button" className="pp-btn pp-btn-secondary" onClick={more} disabled={loading} aria-busy={loading || undefined}>{labels.more}</button>
         )}
         {error && <p role="alert" className="mt-2 text-sindoor-600">{labels.error}</p>}
       </div>

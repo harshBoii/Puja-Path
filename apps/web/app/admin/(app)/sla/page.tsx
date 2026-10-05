@@ -1,4 +1,5 @@
 "use client";
+import { DiyaLoader } from "@pujapath/ui";
 import Link from "next/link";
 
 import { Badge, Card, PageTitle, Table, fmtDate, useAction, useApi } from "@/components/admin/ui";
@@ -15,7 +16,7 @@ export default function SlaBoard() {
     <>
       <PageTitle actions={<button className="pp-btn pp-btn-secondary" onClick={reload}>Refresh</button>}>SLA board</PageTitle>
       {view}
-      {!data ? <p>Loading…</p> : data.groups.length === 0 ? <p className="text-ink-600">Nothing at risk. As of {fmtDate(data.as_of)}.</p> : data.groups.map((g) => (
+      {!data ? <DiyaLoader label="Loading…" /> : data.groups.length === 0 ? <p className="text-ink-600">Nothing at risk. As of {fmtDate(data.as_of)}.</p> : data.groups.map((g) => (
         <Card key={g.event_id} title={<Link href={`/admin/events/${g.event_id}`} className="pp-link">{g.title}</Link>}
           actions={<button className="pp-btn pp-btn-secondary min-h-10" onClick={() => {
             const note = window.prompt("Escalation note (sent to ops by email and Slack):");

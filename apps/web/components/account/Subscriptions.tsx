@@ -1,5 +1,5 @@
 "use client";
-import { EmptyState, StatusChip } from "@pujapath/ui";
+import { AsyncButton, DiyaLoader, EmptyState, StatusChip } from "@pujapath/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
@@ -23,7 +23,7 @@ function Inner() {
   const [msg, setMsg] = useState<string | null>(null);
   const load = useCallback(() => api<Sub[]>("/account/subscriptions").then(setSubs).catch(() => setSubs([])), []);
   useEffect(() => { load(); }, [load]);
-  if (!subs) return <p aria-busy="true">{t("common.loading")}</p>;
+  if (!subs) return <DiyaLoader label={t("common.loading")} />;
   return (
     <div className="space-y-6">
       <h1 className="text-h1">{t("account.subscriptions")}</h1>
@@ -50,12 +50,12 @@ function Inner() {
                 ))}
               </ol>
               {s.status === "active" && (
-                <button type="button" className="pp-btn border border-sindoor-600 text-sindoor-600" onClick={async () => {
+                <AsyncButton className="pp-btn border border-sindoor-600 text-sindoor-600" onClick={async () => {
                   if (!window.confirm(t("account.cancelRemainingConfirm"))) return;
                   await api(`/account/subscriptions/${s.id}/cancel`, { method: "POST" });
                   setMsg(t("account.cancelRemainingDone"));
                   load();
-                }}>{t("account.cancelRemaining")}</button>
+                }}>{t("account.cancelRemaining")}</AsyncButton>
               )}
             </li>
           ))}

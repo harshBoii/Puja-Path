@@ -1,7 +1,7 @@
 {
   "puja:rudrabhishekam": [
     {
-      "key": "photos/rudrabhishekam-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/rudrabhishekam-1.webp",
       "alt": {
         "en": "A Shiva lingam decorated with marigolds",
         "hi": "गेंदे के फूलों से सजा शिवलिंग",
@@ -15,7 +15,7 @@
       }
     },
     {
-      "key": "photos/rudrabhishekam-2.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/rudrabhishekam-2.webp",
       "alt": {
         "en": "Brass temple bells",
         "hi": "पीतल की मंदिर घंटियाँ",
@@ -31,7 +31,7 @@
   ],
   "puja:navagraha-shanti-homam": [
     {
-      "key": "photos/navagraha-shanti-homam-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/navagraha-shanti-homam-1.webp",
       "alt": {
         "en": "A sacred fire ritual",
         "hi": "पवित्र अग्नि अनुष्ठान",
@@ -45,7 +45,7 @@
       }
     },
     {
-      "key": "photos/navagraha-shanti-homam-2.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/navagraha-shanti-homam-2.webp",
       "alt": {
         "en": "A lit oil lamp",
         "hi": "जलता हुआ दीपक",
@@ -61,7 +61,7 @@
   ],
   "puja:pitru-tarpan": [
     {
-      "key": "photos/pitru-tarpan-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/pitru-tarpan-1.webp",
       "alt": {
         "en": "Steps of a ghat on the river",
         "hi": "नदी किनारे घाट की सीढ़ियाँ",
@@ -75,7 +75,7 @@
       }
     },
     {
-      "key": "photos/pitru-tarpan-2.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/pitru-tarpan-2.webp",
       "alt": {
         "en": "An evening aarti on the river",
         "hi": "नदी पर संध्या आरती",
@@ -91,7 +91,7 @@
   ],
   "puja:lakshmi-kubera-puja": [
     {
-      "key": "photos/lakshmi-kubera-puja-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/lakshmi-kubera-puja-1.webp",
       "alt": {
         "en": "A lotus flower",
         "hi": "कमल का फूल",
@@ -105,7 +105,7 @@
       }
     },
     {
-      "key": "photos/lakshmi-kubera-puja-2.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/lakshmi-kubera-puja-2.webp",
       "alt": {
         "en": "A puja plate with offerings",
         "hi": "अर्पण सहित पूजा की थाली",
@@ -121,7 +121,7 @@
   ],
   "puja:rahu-ketu-shanti-puja": [
     {
-      "key": "photos/rahu-ketu-shanti-puja-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/rahu-ketu-shanti-puja-1.webp",
       "alt": {
         "en": "A sacred fire ritual",
         "hi": "पवित्र अग्नि अनुष्ठान",
@@ -137,7 +137,7 @@
   ],
   "puja:satyanarayana-vratam": [
     {
-      "key": "photos/satyanarayana-vratam-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/satyanarayana-vratam-1.webp",
       "alt": {
         "en": "Flower offerings",
         "hi": "फूलों का अर्पण",
@@ -151,7 +151,7 @@
       }
     },
     {
-      "key": "photos/satyanarayana-vratam-2.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/satyanarayana-vratam-2.webp",
       "alt": {
         "en": "A puja plate with offerings",
         "hi": "अर्पण सहित पूजा की थाली",
@@ -167,7 +167,7 @@
   ],
   "puja:shani-chadhava": [
     {
-      "key": "photos/shani-chadhava-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/shani-chadhava-1.webp",
       "alt": {
         "en": "A lit oil lamp",
         "hi": "जलता हुआ दीपक",
@@ -183,7 +183,7 @@
   ],
   "puja:mangalavara-hanuman-seva": [
     {
-      "key": "photos/mangalavara-hanuman-seva-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/mangalavara-hanuman-seva-1.webp",
       "alt": {
         "en": "Brass temple bells",
         "hi": "पीतल की मंदिर घंटियाँ",
@@ -199,7 +199,7 @@
   ],
   "puja:nitya-deepa-seva": [
     {
-      "key": "photos/nitya-deepa-seva-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/nitya-deepa-seva-1.webp",
       "alt": {
         "en": "A lit oil lamp",
         "hi": "जलता हुआ दीपक",
@@ -215,7 +215,7 @@
   ],
   "temple:sri-mallikarjuna-swamy-temple-vijayawada": [
     {
-      "key": "photos/sri-mallikarjuna-swamy-temple-vijayawada-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/sri-mallikarjuna-swamy-temple-vijayawada-1.webp",
       "alt": {
         "en": "A temple gopuram",
         "hi": "मंदिर का गोपुरम",
@@ -231,7 +231,7 @@
   ],
   "temple:navagraha-yagashala-kanchipuram": [
     {
-      "key": "photos/navagraha-yagashala-kanchipuram-1-12430842.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/navagraha-yagashala-kanchipuram-1-12430842.webp",
       "alt": {
         "en": "A sacred fire ritual",
         "hi": "पवित्र अग्नि अनुष्ठान",
@@ -247,7 +247,7 @@
   ],
   "temple:dashashwamedh-ghat-varanasi": [
     {
-      "key": "photos/dashashwamedh-ghat-varanasi-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/dashashwamedh-ghat-varanasi-1.webp",
       "alt": {
         "en": "Steps of a ghat on the river",
         "hi": "नदी किनारे घाट की सीढ़ियाँ",
@@ -263,7 +263,7 @@
   ],
   "temple:sri-mahalakshmi-temple-hyderabad": [
     {
-      "key": "photos/sri-mahalakshmi-temple-hyderabad-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/sri-mahalakshmi-temple-hyderabad-1.webp",
       "alt": {
         "en": "A temple shrine",
         "hi": "मंदिर का गर्भगृह",
@@ -279,7 +279,7 @@
   ],
   "addon:addon-oil": [
     {
-      "key": "photos/addon-oil-1-8819384.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/addon-oil-1-8819384.webp",
       "alt": {
         "en": "Sesame oil",
         "hi": "तिल का तेल",
@@ -295,7 +295,7 @@
   ],
   "addon:addon-cloth": [
     {
-      "key": "photos/addon-cloth-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/addon-cloth-1.webp",
       "alt": {
         "en": "Black cloth",
         "hi": "काला वस्त्र",
@@ -311,7 +311,7 @@
   ],
   "addon:addon-til": [
     {
-      "key": "photos/addon-til-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/addon-til-1.webp",
       "alt": {
         "en": "Black sesame seeds",
         "hi": "काले तिल",
@@ -327,7 +327,7 @@
   ],
   "addon:addon-diya": [
     {
-      "key": "photos/addon-diya-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/addon-diya-1.webp",
       "alt": {
         "en": "A lit oil lamp",
         "hi": "जलता हुआ दीपक",
@@ -343,7 +343,7 @@
   ],
   "addon:addon-flowers": [
     {
-      "key": "photos/addon-flowers-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/addon-flowers-1.webp",
       "alt": {
         "en": "Flower offerings",
         "hi": "फूलों का अर्पण",
@@ -359,7 +359,7 @@
   ],
   "addon:addon-coconut": [
     {
-      "key": "photos/addon-coconut-1.webp",
+      "key": "https://pub-66cf2d13a8394908aa00388214f16c66.r2.dev/pujapath/photos/addon-coconut-1.webp",
       "alt": {
         "en": "A coconut",
         "hi": "नारियल",

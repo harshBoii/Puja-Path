@@ -1,5 +1,5 @@
 "use client";
-import { cx } from "@pujapath/ui";
+import { DiyaLoader, cx } from "@pujapath/ui";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
@@ -41,7 +41,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       router.replace("/admin/login");
     });
   }, [router]);
-  if (!staff) return <p className="p-6">Loading…</p>;
+  if (!staff) return <DiyaLoader label="Loading…" className="min-h-[60vh]" />;
   const items = NAV.filter((n) => staff.role === "admin" || n.roles.includes("*") || n.roles.includes(staff.role));
   return (
     <StaffCtx.Provider value={staff}>
@@ -142,6 +142,10 @@ export function useAction() {
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
   const run = useCallback(async (fn: () => Promise<unknown>, ok = "Done.") => {
+    // Spin the button that started the action: the clicked button, or the submit button of the focused form.
+    const el = document.activeElement;
+    const btn = el instanceof HTMLButtonElement ? el : el instanceof HTMLElement ? el.closest("form")?.querySelector<HTMLButtonElement>("button:not([type=button])") : null;
+    btn?.setAttribute("aria-busy", "true");
     setBusy(true);
     setMsg(null);
     try { await fn(); setMsg({ text: ok, ok: true }); return true; }
@@ -150,7 +154,7 @@ export function useAction() {
       const text = e instanceof ApiError ? (typeof detail === "object" && detail ? JSON.stringify(detail) : e.code) : String(e);
       setMsg({ text, ok: false });
       return false;
-    } finally { setBusy(false); }
+    } finally { btn?.removeAttribute("aria-busy"); setBusy(false); }
   }, []);
   const view = msg ? <p role={msg.ok ? "status" : "alert"} className={cx("my-2 break-words", msg.ok ? "text-tulsi-600" : "text-sindoor-600")}>{msg.text}</p> : null;
   return { run, busy, view };

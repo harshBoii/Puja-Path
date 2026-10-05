@@ -100,13 +100,14 @@ def save_variants(img: Image.Image, name: str) -> str:
     main.thumbnail((1600, 1600))
     files[f"{name}.webp"] = main
     if use_r2():
-        from providers.media.storage import put_file
+        from providers.media.storage import public_url, put_file
 
         for fname, im in files.items():
             p = out / fname
             im.save(p, "WEBP", quality=80, method=5)
             put_file(p, f"photos/{fname}", "image/webp")
-        return f"photos/{name}.webp"
+        # store the full public URL so the site shows photos regardless of the API's R2 settings
+        return public_url(f"photos/{name}.webp")
     WEB_PHOTOS.mkdir(parents=True, exist_ok=True)
     for fname, im in files.items():
         im.save(WEB_PHOTOS / fname, "WEBP", quality=80, method=5)
@@ -150,7 +151,7 @@ async def fetch(key: str, only: list[str] | None = None, skip: int = 0) -> dict:
 
 
 async def apply(manifest: dict) -> None:
-    from sqlalchemy import select
+    from sqlalchemy import or_, select
 
     from db import SessionLocal
     from models import AddonItem, Puja, Temple
@@ -176,8 +177,9 @@ async def apply(manifest: dict) -> None:
                     tags.append(f"temple:{t.id}")
                     n += 1
             else:
-                for item in (await db.execute(select(AddonItem).where(
-                        AddonItem.image_key == f"/images/seed/{slug}.svg"))).scalars():
+                for item in (await db.execute(select(AddonItem).where(or_(
+                        AddonItem.image_key == f"/images/seed/{slug}.svg",
+                        AddonItem.image_key.like(f"%photos/{slug}-%"))))).scalars():
                     item.image_key = images[0]["key"]
                     n += 1
         await db.commit()

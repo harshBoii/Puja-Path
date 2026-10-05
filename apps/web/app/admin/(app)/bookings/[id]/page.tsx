@@ -1,4 +1,5 @@
 "use client";
+import { DiyaLoader } from "@pujapath/ui";
 import { use, useState } from "react";
 
 import { Badge, Card, Field, PageTitle, Table, fmtDate, inr, statusTone, useAction, useApi, useStaff } from "@/components/admin/ui";
@@ -25,7 +26,7 @@ export default function BookingAdmin({ params }: { params: Promise<{ id: string 
   const { data: b, reload } = useApi<D>(`/admin/bookings/${id}`);
   const { run, busy, view } = useAction();
   const [names, setNames] = useState<D["names"] | null>(null);
-  if (!b) return <p>Loading…</p>;
+  if (!b) return <DiyaLoader label="Loading…" />;
   const canSupport = ["admin", "support_agent"].includes(staff?.role ?? "");
   const canRefund = ["admin", "support_agent", "finance"].includes(staff?.role ?? "");
   const edit = names ?? b.names;

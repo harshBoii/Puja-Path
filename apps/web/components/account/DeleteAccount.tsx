@@ -1,4 +1,5 @@
 "use client";
+import { AsyncButton } from "@pujapath/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -22,8 +23,8 @@ export default function DeleteAccount() {
               until: dateIST(res?.complete_by ?? new Date(new Date(me.deletion_requested_at!).getTime() + 30 * 864e5).toISOString(), locale, { year: "numeric" }),
             })}</p>
           ) : (
-            <button type="button" className="pp-btn border border-sindoor-600 text-sindoor-600"
-              onClick={async () => setRes(await api("/account/delete-request", { method: "POST" }))}>{t("account.deleteConfirm")}</button>
+            <AsyncButton className="pp-btn border border-sindoor-600 text-sindoor-600"
+              onClick={async () => setRes(await api("/account/delete-request", { method: "POST" }))}>{t("account.deleteConfirm")}</AsyncButton>
           )}
         </div>
       )}</AccountGate>

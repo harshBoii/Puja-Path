@@ -1,4 +1,5 @@
 "use client";
+import { DiyaLoader } from "@pujapath/ui";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -26,7 +27,7 @@ export default function Today() {
       <PageTitle actions={<input type="date" className="pp-input w-auto" value={day} onChange={(e) => setDay(e.target.value)} aria-label="Day" />}>
         Today {data && <span className="text-h3 text-ink-600">· {data.date}</span>}
       </PageTitle>
-      {!data ? <p>Loading…</p> : (
+      {!data ? <DiyaLoader label="Loading…" /> : (
         <>
           <ul className="space-y-3">{data.events.length ? list(data.events) : <p className="text-ink-600">No events on this day.</p>}</ul>
           {data.carry_over.length > 0 && <Card title="Earlier events still awaiting proof" className="mt-6"><ul className="space-y-3">{list(data.carry_over)}</ul></Card>}

@@ -1,4 +1,5 @@
 "use client";
+import { AsyncButton } from "@pujapath/ui";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
@@ -59,7 +60,7 @@ export default function OtpLogin({ initialPhone, onDone, wishlist }: { initialPh
           <label className="block"><span className="mb-1 block font-medium">{t("checkout.whatsapp")}</span>
             <input className="pp-input" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
           </label>
-          <button type="button" className="pp-btn pp-btn-primary w-full" disabled={busy} onClick={() => send("whatsapp")}>{t("checkout.sendCode")}</button>
+          <AsyncButton className="pp-btn pp-btn-primary w-full" onClick={() => send("whatsapp")}>{t("checkout.sendCode")}</AsyncButton>
         </>
       ) : (
         <>
@@ -69,9 +70,9 @@ export default function OtpLogin({ initialPhone, onDone, wishlist }: { initialPh
             <input className="pp-input text-center text-h3 tracking-[0.4em]" inputMode="numeric" autoComplete="one-time-code"
               maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} />
           </label>
-          <button type="button" className="pp-btn pp-btn-primary w-full" disabled={busy || code.length !== 6} onClick={verify}>{t("checkout.verify")}</button>
+          <AsyncButton className="pp-btn pp-btn-primary w-full" disabled={code.length !== 6} onClick={verify}>{t("checkout.verify")}</AsyncButton>
           {wait > 0 ? <p className="text-small text-ink-600">{t("checkout.smsIn", { seconds: wait })}</p> : (
-            <button type="button" className="pp-link min-h-12" onClick={() => send("sms")}>{t("checkout.smsFallback")}</button>
+            <AsyncButton className="pp-link min-h-12" onClick={() => send("sms")}>{t("checkout.smsFallback")}</AsyncButton>
           )}
         </>
       )}

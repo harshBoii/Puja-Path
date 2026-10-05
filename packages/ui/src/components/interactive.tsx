@@ -1,9 +1,32 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type MouseEvent, type ReactNode } from "react";
 
 import { IconChevronLeft, IconChevronRight, IconMinus, IconPlus, IconX } from "./icons";
 import { cx } from "./static";
+
+// ---------------------------------------------------------------- buttons with a loading spinner
+/** A button whose onClick may return a promise: while it is pending the button shows a spinner (via
+ *  aria-busy, styled in tokens.css) and ignores further clicks. Only this button spins, not its neighbours. */
+export function AsyncButton({ onClick, loading, disabled, children, ...rest }:
+  Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onClick"> & {
+    onClick?: (e: MouseEvent<HTMLButtonElement>) => unknown; loading?: boolean;
+  }) {
+  const [pending, setPending] = useState(false);
+  const busy = Boolean(loading || pending);
+  return (
+    <button type="button" {...rest} disabled={disabled || busy} aria-busy={busy || undefined}
+      onClick={async (e) => {
+        const result = onClick?.(e);
+        if (result && typeof (result as Promise<unknown>).then === "function") {
+          setPending(true);
+          try { await result; } finally { setPending(false); }
+        }
+      }}>
+      {children}
+    </button>
+  );
+}
 
 // ---------------------------------------------------------------- package selector (radio cards)
 export function PackageSelector({ options, value, onChange, legend }: {

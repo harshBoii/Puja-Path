@@ -1,4 +1,5 @@
 "use client";
+import { DiyaLoader } from "@pujapath/ui";
 import Link from "next/link";
 import { use, useMemo, useRef, useState } from "react";
 
@@ -23,7 +24,7 @@ export default function EventOps({ params }: { params: Promise<{ id: string }> }
   const clips = useApi<Clips>(`/admin/events/${id}/clips`);
   const { run, busy, view } = useAction();
   const e = ev.data;
-  if (!e) return <p>Loading…</p>;
+  if (!e) return <DiyaLoader label="Loading…" />;
   const reloadAll = () => { ev.reload(); sheet.reload(); clips.reload(); };
 
   return (

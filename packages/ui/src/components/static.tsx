@@ -345,3 +345,35 @@ export function StatusChip({ status, label }: { status: string; label: string })
     : ["cancelled", "refunded"].includes(status) ? "border-sindoor-600 text-sindoor-600" : "border-gold-600 text-gold-700";
   return <span className={cx("inline-flex rounded-chip border bg-surface px-2.5 py-0.5 text-small font-semibold", tone)}>{label}</span>;
 }
+
+/** Loading state: a brass diya with a flickering flame. Announced to screen readers via role="status". */
+export function DiyaLoader({ label, size = 72, className }: { label: string; size?: number; className?: string }) {
+  return (
+    <div role="status" aria-live="polite" className={cx("flex flex-col items-center justify-center gap-3 py-16", className)}>
+      <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <radialGradient id="pp-diya-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stopColor="#F6EDD0" stopOpacity="0.95" />
+            <stop offset="1" stopColor="#F6EDD0" stopOpacity="0" />
+          </radialGradient>
+          <linearGradient id="pp-diya-flame" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0" stopColor="#B8922E" />
+            <stop offset="0.45" stopColor="#D4AF37" />
+            <stop offset="1" stopColor="#F3E3A3" />
+          </linearGradient>
+          <linearGradient id="pp-diya-bowl" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#D4AF37" />
+            <stop offset="1" stopColor="#7A5C17" />
+          </linearGradient>
+        </defs>
+        <circle className="pp-diya-glow" cx="32" cy="24" r="20" fill="url(#pp-diya-glow)" />
+        <path className="pp-diya-flame" d="M32 6c-5 7-7 12-7 16a7 7 0 0 0 14 0c0-4-2-9-7-16z" fill="url(#pp-diya-flame)" />
+        <path d="M32 18c-2 3-3 5-3 7a3 3 0 0 0 6 0c0-2-1-4-3-7z" fill="#FFFDF5" opacity="0.85" className="pp-diya-flame" />
+        <path d="M8 38c4 10 44 10 48 0-3 9-12 15-24 15S11 47 8 38z" fill="url(#pp-diya-bowl)" />
+        <path d="M8 38c6 4 42 4 48 0" fill="none" stroke="#7A5C17" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M30 34c1-2 3-2 4 0" fill="none" stroke="#2B2118" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+      <p className="text-small font-medium text-gold-700">{label}</p>
+    </div>
+  );
+}

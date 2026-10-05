@@ -73,7 +73,7 @@ export default function BookingPanel({ puja, contact }: { puja: PujaDetail; cont
 
   const total = seva && mode === "full" ? perOccurrence * seva.occurrences : perOccurrence;
   const button = (
-    <button type="button" className="pp-btn pp-btn-primary" onClick={book} disabled={!bookable || busy || !pkg}>
+    <button type="button" className="pp-btn pp-btn-primary" onClick={book} disabled={!bookable || busy || !pkg} aria-busy={busy || undefined}>
       {cta}
     </button>
   );

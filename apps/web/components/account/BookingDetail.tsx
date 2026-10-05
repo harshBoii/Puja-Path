@@ -1,5 +1,5 @@
 "use client";
-import { BookingTimeline, IconDownload, StatusChip } from "@pujapath/ui";
+import { AsyncButton, BookingTimeline, DiyaLoader, IconDownload, StatusChip } from "@pujapath/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
@@ -32,7 +32,7 @@ function Inner({ id, whatsapp }: { id: string; whatsapp: string }) {
   const [msg, setMsg] = useState<string | null>(null);
   const load = useCallback(() => api<Detail>(`/account/bookings/${id}`).then(setB).catch(() => setMsg(t("common.error"))), [id, t]);
   useEffect(() => { load(); }, [load]);
-  if (!b) return <p aria-busy="true">{msg ?? t("common.loading")}</p>;
+  if (!b) return msg ? <p role="alert">{msg}</p> : <DiyaLoader label={t("common.loading")} />;
   const amount = money(b.total_minor, b.currency, locale);
   const cancel = async () => {
     if (!window.confirm(t("account.cancelConfirm", { amount }))) return;
@@ -96,7 +96,7 @@ function Inner({ id, whatsapp }: { id: string; whatsapp: string }) {
         {b.can_cancel ? (
           <>
             <p className="mb-3 text-ink-600">{t("account.cancelWindow", { date: `${dateIST(b.booking_cutoff_at, locale)} ${timeIST(b.booking_cutoff_at, locale)} ${t("common.ist")}` })}</p>
-            <button type="button" className="pp-btn border border-sindoor-600 text-sindoor-600" onClick={cancel}>{t("account.cancel")}</button>
+            <AsyncButton className="pp-btn border border-sindoor-600 text-sindoor-600" onClick={cancel}>{t("account.cancel")}</AsyncButton>
           </>
         ) : ["confirmed", "locked"].includes(b.status) ? <p className="text-ink-600">{t("account.noCancel")}</p> : null}
       </section>

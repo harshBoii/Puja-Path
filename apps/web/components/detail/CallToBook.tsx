@@ -25,6 +25,7 @@ export default function CallToBook({ config, pujaId, locale, hoursText }: {
   const [open, setOpen] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState(false);
+  const [sending, setSending] = useState(false);
   const staffed = useBrowserValue<boolean | null>(() => withinHours(config.support_hours), null);
   if (staffed === null) return null;
   if (staffed) {
@@ -46,10 +47,11 @@ export default function CallToBook({ config, pujaId, locale, hoursText }: {
             const fd = new FormData(e.currentTarget);
             const raw = String(fd.get("phone") ?? "").replace(/[^\d+]/g, "");
             const phone = raw.startsWith("+") ? raw : `+91${raw}`;
+            setSending(true);
             try {
               await api("/callback-requests", { method: "POST", json: { phone_e164: phone, name: fd.get("name") || null, puja_id: pujaId, locale } });
               setDone(true);
-            } catch { setErr(true); }
+            } catch { setErr(true); } finally { setSending(false); }
           }}>
             <p className="text-ink-600">{t("puja.callbackText", { hours: hoursText })}</p>
             <label className="block"><span className="mb-1 block font-medium">{t("puja.callbackName")}</span>
@@ -57,7 +59,7 @@ export default function CallToBook({ config, pujaId, locale, hoursText }: {
             <label className="block"><span className="mb-1 block font-medium">{t("puja.callbackPhone")}</span>
               <input name="phone" className="pp-input" inputMode="tel" autoComplete="tel" required /></label>
             {err && <p role="alert" className="text-sindoor-600">{t("common.error")}</p>}
-            <button className="pp-btn pp-btn-primary w-full">{t("puja.callbackSubmit")}</button>
+            <button className="pp-btn pp-btn-primary w-full" aria-busy={sending || undefined}>{t("puja.callbackSubmit")}</button>
           </form>
         )}
       </BottomSheet>

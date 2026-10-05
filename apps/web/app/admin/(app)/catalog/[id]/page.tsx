@@ -1,5 +1,5 @@
 "use client";
-import { cx } from "@pujapath/ui";
+import { DiyaLoader, cx } from "@pujapath/ui";
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
 
@@ -37,7 +37,7 @@ export default function PujaEditor({ params }: { params: Promise<{ id: string }>
   const [errors, setErrors] = useState<Err[]>([]);
   const [previewKey, setPreviewKey] = useState(0);
   const { run, busy, view } = useAction();
-  if (!data) return <p>Loading…</p>;
+  if (!data) return <DiyaLoader label="Loading…" />;
   const p = data;
   const set = (patch: Partial<Puja>) => setData({ ...p, ...patch });
 
@@ -171,7 +171,7 @@ function Images({ puja, set }: { puja: Puja; set: (p: Partial<Puja>) => void }) 
       <ul className="mb-3 grid gap-3 sm:grid-cols-3">
         {puja.images.map((img, i) => (
           <li key={img.key} className="rounded-btn border border-marble-200 p-2 text-small">
-            <img src={img.key.startsWith("/") ? img.key : `/media/${img.key}`} alt={img.alt.en ?? ""} className="mb-1 aspect-[4/3] w-full rounded-btn object-cover" />
+            <img src={/^(https?:)?\/\//.test(img.key) || img.key.startsWith("/") ? img.key : `/media/${img.key}`} alt={img.alt.en ?? ""} className="mb-1 aspect-[4/3] w-full rounded-btn object-cover" />
             {LOCALES.map((l) => (
               <input key={l} lang={l} className="pp-input mb-1 min-h-9 py-1 text-small" placeholder={`alt (${l})`} value={img.alt[l] ?? ""}
                 onChange={(e) => set({ images: puja.images.map((x, k) => (k === i ? { ...x, alt: { ...x.alt, [l]: e.target.value } } : x)) })} />

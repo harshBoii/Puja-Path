@@ -1,4 +1,5 @@
 "use client";
+import { DiyaLoader } from "@pujapath/ui";
 import { useState } from "react";
 
 import { Card, PageTitle, useAction, useApi } from "@/components/admin/ui";
@@ -9,7 +10,7 @@ export default function SiteConfigPage() {
   const { data, reload } = useApi<Record<string, unknown>>("/admin/config");
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const { run, busy, view } = useAction();
-  if (!data) return <p>Loading…</p>;
+  if (!data) return <DiyaLoader label="Loading…" />;
   return (
     <>
       <PageTitle>Site config</PageTitle>

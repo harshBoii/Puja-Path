@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 
 import {
-  Accordion, ArchFrame, BenefitList, BookingTimeline, BottomSheet, Countdown, DeliverablesList, EmptyState, FactBox, GlyphBell,
+  Accordion, ArchFrame, BenefitList, BookingTimeline, BottomSheet, Countdown, DeliverablesList, DiyaLoader, EmptyState, FactBox, GlyphBell,
   GlyphConch, GlyphDiya, GlyphKalash, GlyphLotus, GlyphTemple, HeroCarousel, OrnamentDivider, PackageSelector, PriceSummary,
   PromiseStrip, PujaCard, QtyStepper, ReviewCard, RitualSteps, SectionNav, Skeleton, StatusChip, StepsRow, StickyBookBar,
   TempleCard, Toast, TrustBar,
@@ -96,6 +96,7 @@ export const Feedback: S = {
     const [toast, setToast] = useState<string | null>(null);
     return (
       <div className="space-y-4">
+        <DiyaLoader label={tr(L(globals), "common.loading")} />
         <EmptyState title={tr(L(globals), "account.bookingsEmpty")} />
         <Skeleton className="h-24" />
         <Countdown deadlineIso={new Date(Date.now() + 5 * 3600e3).toISOString()} initialRemainingMs={5 * 3600e3}

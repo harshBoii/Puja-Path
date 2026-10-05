@@ -1,5 +1,5 @@
 "use client";
-import { BottomSheet } from "@pujapath/ui";
+import { AsyncButton, BottomSheet } from "@pujapath/ui";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
@@ -68,8 +68,8 @@ export default function PayModal({ payload, name, phone, onPaid, onFailed, onClo
   return (
     <BottomSheet open onClose={onClose} title={t("checkout.fakeGatewayTitle")} closeLabel={t("common.close")}
       footer={<>
-        <button type="button" className="pp-btn pp-btn-secondary flex-1" onClick={() => simulate("failure")}>{t("checkout.fakeFail")}</button>
-        <button type="button" className="pp-btn pp-btn-primary flex-1" onClick={() => simulate("success")}>{t("checkout.fakePay")}</button>
+        <AsyncButton className="pp-btn pp-btn-secondary flex-1" onClick={() => simulate("failure")}>{t("checkout.fakeFail")}</AsyncButton>
+        <AsyncButton className="pp-btn pp-btn-primary flex-1" onClick={() => simulate("success")}>{t("checkout.fakePay")}</AsyncButton>
       </>}>
       <p>{t("checkout.fakeGatewayText")}</p>
       <p className="mt-2 font-semibold">{new Intl.NumberFormat(undefined, { style: "currency", currency: payload.currency }).format(payload.amount_minor / 100)}</p>

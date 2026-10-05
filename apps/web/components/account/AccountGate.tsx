@@ -1,4 +1,5 @@
 "use client";
+import { DiyaLoader } from "@pujapath/ui";
 import { useTranslations } from "next-intl";
 
 import OtpLogin from "@/components/checkout/OtpLogin";
@@ -9,7 +10,7 @@ import { type Me, useMe } from "./useMe";
 export default function AccountGate({ children }: { children: (me: Me, reload: () => void) => React.ReactNode }) {
   const t = useTranslations();
   const { me, reload } = useMe();
-  if (me === undefined) return <p aria-busy="true">{t("common.loading")}</p>;
+  if (me === undefined) return <DiyaLoader label={t("common.loading")} />;
   if (!me) {
     return (
       <div className="max-w-md space-y-3">

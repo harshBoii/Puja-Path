@@ -1,5 +1,5 @@
 "use client";
-import { BookingTimeline, GlyphDiya } from "@pujapath/ui";
+import { BookingTimeline, DiyaLoader, GlyphDiya } from "@pujapath/ui";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
@@ -30,9 +30,8 @@ export default function Success({ id, slaHours }: { id: string; slaHours: number
   if (!confirmed) {
     return (
       <div className="pp-card mx-auto max-w-xl p-8 text-center" role="status" aria-live="polite">
-        <GlyphDiya size={48} className="mx-auto animate-pulse text-gold-600" />
-        <h1 className="mt-3 text-h2">{t("checkout.confirming")}</h1>
-        <p className="mt-2 text-ink-600">{t("checkout.confirmingText")}</p>
+        <h1 className="text-h2">{t("checkout.confirming")}</h1>
+        <DiyaLoader label={t("checkout.confirmingText")} className="py-6" />
       </div>
     );
   }

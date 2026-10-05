@@ -8,7 +8,7 @@
   --marble-400: #b3aea5;
   --surface: #ffffff;
   --ink-900: #2b2118;
-  --ink-600: #5e5246;
+  --ink-600: #4f4439;
   --gold-100: #f6edd0;
   --gold-300: #ead9a0;
   --gold-500: #d4af37;
@@ -22,12 +22,12 @@
   --page-shine:
     radial-gradient(1100px 520px at 12% -8%, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0) 62%),
     radial-gradient(900px 480px at 100% 4%, rgba(246, 237, 208, 0.28), rgba(255, 255, 255, 0) 60%),
-    linear-gradient(180deg, #ffffff 0%, #f9f9f7 55%, #f6f6f3 100%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(246, 246, 243, 0.2) 100%);
   /* polished highlight for hero/footer sections */
   --section-shine:
     linear-gradient(115deg, rgba(255, 255, 255, 0) 18%, rgba(255, 255, 255, 0.95) 44%, rgba(255, 255, 255, 0.2) 58%,
       rgba(255, 255, 255, 0) 74%),
-    linear-gradient(180deg, #ffffff 0%, #f6f5f1 100%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(246, 245, 241, 0.35) 100%);
   --whatsapp-green: #25d366; /* brand glyph only, never text */
   /* decorative only: borders, ornaments, display text 32px and up */
   --gold-foil: linear-gradient(135deg, #8c6a1f 0%, #d4af37 40%, #f3e3a3 55%, #b8922e 75%, #8c6a1f 100%);
@@ -35,8 +35,8 @@
   --radius-card: 16px;
   --radius-btn: 12px;
   --radius-chip: 999px;
-  --font-display: "Cormorant Garamond", Georgia, serif;
-  --font-body: "DM Sans", system-ui, sans-serif;
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body: "Hind", system-ui, sans-serif;
   /* Light theme only in v1; a "black marble" theme can redefine these names later. */
   color-scheme: light;
 }
@@ -85,11 +85,24 @@
   }
   body {
     background-color: var(--marble-50);
-    background-image: var(--page-shine);
     color: var(--ink-900);
     font-family: var(--font-body);
+    font-weight: 500;
     font-size: var(--text-body);
     line-height: var(--text-body--line-height);
+  }
+  /* White marble slab fixed behind the page (a fixed layer, not background-attachment, so it also works on
+     phones): no tiling seams, crisp at any density, and the sheen keeps it bright and polished. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: var(--page-shine), url("/images/marble.svg");
+    background-size: 100% 100%, cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
   /* Indic scripts get taller line height for body text */
   html[lang="hi"] body,
@@ -102,7 +115,7 @@
   h3,
   .font-display {
     font-family: var(--font-display);
-    font-weight: 600;
+    font-weight: 700;
   }
   html[lang="hi"] :is(h1, h2, h3, .font-display),
   html[lang="ta"] :is(h1, h2, h3, .font-display),
@@ -179,7 +192,7 @@
     min-height: 3rem;
     padding: 0 1.25rem;
     border-radius: var(--radius-btn);
-    font-weight: 600;
+    font-weight: 700;
     font-size: 1rem;
     line-height: 1.2;
     text-decoration: none;
@@ -188,7 +201,22 @@
       background-color 150ms,
       border-color 150ms;
   }
-  .pp-btn:disabled {
+  /* loading: any .pp-btn with aria-busy="true" shows a spinner and ignores clicks, keeping its own colours */
+  .pp-btn[aria-busy="true"] {
+    cursor: progress;
+    pointer-events: none;
+  }
+  .pp-btn[aria-busy="true"]::before {
+    content: "";
+    width: 1.05em;
+    height: 1.05em;
+    flex-shrink: 0;
+    border-radius: 999px;
+    border: 2.5px solid currentColor;
+    border-right-color: transparent;
+    animation: pp-spin 0.7s linear infinite;
+  }
+  .pp-btn:disabled:not([aria-busy="true"]) {
     cursor: not-allowed;
     background: var(--marble-100);
     color: var(--ink-600);
@@ -333,6 +361,31 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+}
+
+/* Diya loader: flickering flame + breathing glow (static under prefers-reduced-motion, see below) */
+@keyframes pp-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pp-flame {
+  0%, 100% { transform: scale(1, 1) skewX(0deg); }
+  20% { transform: scale(0.96, 1.06) skewX(-2deg); }
+  45% { transform: scale(1.03, 0.95) skewX(2deg); }
+  70% { transform: scale(0.98, 1.04) skewX(-1deg); }
+}
+@keyframes pp-glow {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.12); }
+}
+.pp-diya-flame {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: pp-flame 1.1s ease-in-out infinite;
+}
+.pp-diya-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pp-glow 2.2s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

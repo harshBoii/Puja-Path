@@ -1,5 +1,5 @@
 "use client";
-import { PriceSummary, QtyStepper, Toast, cx } from "@pujapath/ui";
+import { AsyncButton, DiyaLoader, PriceSummary, QtyStepper, Toast, cx } from "@pujapath/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -219,7 +219,7 @@ export default function Checkout({ draftId }: { draftId: string }) {
       </div>
     );
   }
-  if (!draft) return <div className="pp-gutter pt-8" aria-busy="true">{t("common.loading")}</div>;
+  if (!draft) return <div className="pp-gutter"><DiyaLoader label={t("common.loading")} /></div>;
   if (!["draft", "pending_payment"].includes(draft.status)) {
     return (
       <div className="pp-gutter max-w-xl pt-8">
@@ -354,7 +354,7 @@ export default function Checkout({ draftId }: { draftId: string }) {
               </label>
             )}
             <p className="text-small text-ink-600">{t("checkout.purpose")}</p>
-            <button type="button" className="pp-btn pp-btn-primary w-full sm:w-auto" onClick={submitNames} disabled={busy}>{t("common.continue")}</button>
+            <AsyncButton className="pp-btn pp-btn-primary w-full sm:w-auto" onClick={submitNames}>{t("common.continue")}</AsyncButton>
           </section>
 
           {/* STEP 2 — add-ons (not for sevas) */}
@@ -420,7 +420,7 @@ export default function Checkout({ draftId }: { draftId: string }) {
                       </div>
                     </div>
                   )}
-                  <button type="button" className="pp-btn pp-btn-primary w-full sm:w-auto" onClick={submitAddons} disabled={busy}>{t("common.continue")}</button>
+                  <AsyncButton className="pp-btn pp-btn-primary w-full sm:w-auto" onClick={submitAddons}>{t("common.continue")}</AsyncButton>
                 </>
               )}
             </section>
@@ -472,9 +472,9 @@ export default function Checkout({ draftId }: { draftId: string }) {
                 {!loggedIn ? (
                   <OtpLogin initialPhone={e164} wishlist={readWishlist()} onDone={() => setLoggedIn(true)} />
                 ) : (
-                  <button type="button" className="pp-btn pp-btn-primary w-full text-h3" onClick={pay} disabled={busy}>
+                  <AsyncButton className="pp-btn pp-btn-primary w-full text-h3" onClick={pay}>
                     {t("checkout.pay", { amount: fmt(total) })}
-                  </button>
+                  </AsyncButton>
                 )}
               </>
             )}
