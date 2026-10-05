@@ -9,6 +9,7 @@ import BottomTabBar from "@/components/BottomTabBar";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { CURRENCY_SCRIPT } from "@/components/Price";
+import { NavOverlay } from "@/components/NavPending";
 import Providers from "@/components/Providers";
 import SwRegister from "@/components/SwRegister";
 import { LOCALES, isLocale } from "@/i18n/config";
@@ -62,6 +63,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
             <BottomTabBar labels={{ home: t("nav.home"), pujas: t("nav.pujas"), sevas: t("nav.sevas"),
               account: t("nav.account"), nav: t("nav.tabBar") }} />
           </Providers>
+          <NavOverlay />
           <SwRegister />
         </NextIntlClientProvider>
       </body>

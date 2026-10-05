@@ -1,10 +1,10 @@
 "use client";
 import { PackageSelector, QtyStepper, StickyBookBar, cx } from "@pujapath/ui";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { localeHref } from "@/components/Link";
+import { usePendingRouter } from "@/components/NavPending";
 import { capture } from "@/lib/analytics";
 import { ApiError, api } from "@/lib/client";
 import { money } from "@/lib/format";
@@ -24,7 +24,7 @@ function persistCurrency(c: "INR" | "USD") {
 export default function BookingPanel({ puja, contact }: { puja: PujaDetail; contact: React.ReactNode }) {
   const t = useTranslations();
   const locale = useLocale();
-  const router = useRouter();
+  const router = usePendingRouter();
   const cookieCur = useBrowserValue(cookieCurrency, "INR");
   const [chosen, setChosen] = useState<"INR" | "USD" | null>(null);
   const currency = chosen ?? cookieCur;

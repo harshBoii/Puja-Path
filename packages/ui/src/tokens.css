@@ -382,6 +382,22 @@
   transform-origin: 50% 100%;
   animation: pp-flame 1.1s ease-in-out infinite;
 }
+/* Navigation overlay: a gold bar runs at once; the dimmed page and diya fade in fast. */
+.pp-nav-overlay {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(2px);
+  animation: pp-fade-in 0.15s ease-out both;
+}
+.pp-nav-bar {
+  background: linear-gradient(90deg, transparent, var(--color-gold-600, #b8902b), transparent);
+  background-size: 40% 100%;
+  background-repeat: no-repeat;
+  animation: pp-nav-bar 1.1s ease-in-out infinite;
+}
+@keyframes pp-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pp-nav-bar { from { background-position: -40% 0; } to { background-position: 140% 0; } }
+@media (prefers-reduced-motion: reduce) { .pp-nav-overlay, .pp-nav-bar { animation: none; } }
+
 .pp-diya-glow {
   transform-box: fill-box;
   transform-origin: center;

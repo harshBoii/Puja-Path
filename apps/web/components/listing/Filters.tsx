@@ -1,7 +1,9 @@
 "use client";
 import { BottomSheet, IconFilter, IconSearch } from "@pujapath/ui";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
+
+import { usePendingRouter } from "@/components/NavPending";
 
 type Opt = { value: string; label: string };
 export type FilterGroups = { key: string; label: string; options: Opt[] }[];
@@ -11,7 +13,7 @@ export default function Filters({ groups, sortOptions, labels }: {
   groups: FilterGroups; sortOptions: Opt[];
   labels: { filters: string; apply: string; clear: string; close: string; sort: string; search: string; placeholder: string };
 }) {
-  const router = useRouter();
+  const router = usePendingRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const [open, setOpen] = useState(false);

@@ -3,6 +3,7 @@ import { IconChevronDown, IconGlobe } from "@pujapath/ui";
 import { usePathname } from "next/navigation";
 import { useId } from "react";
 
+import { beginNav } from "@/components/NavPending";
 import { LOCALE_COOKIE, LOCALES, NATIVE_NAMES, type Locale } from "@/i18n/config";
 
 /** Keeps you on the same page if it exists in the target language (read from the page's hreflang
@@ -16,6 +17,7 @@ export function switchLocale(target: Locale, pathname: string) {
   if (match) dest = new URL(match.href).pathname;
   else if (declared.length) dest = `/${target}/pujas`;
   else dest = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, `/${target}`);
+  beginNav(); // full page load: show the loader until the browser leaves
   window.location.assign(dest + window.location.search);
 }
 

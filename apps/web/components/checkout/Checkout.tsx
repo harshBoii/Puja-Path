@@ -1,10 +1,11 @@
 "use client";
 import { AsyncButton, DiyaLoader, PriceSummary, QtyStepper, Toast, cx } from "@pujapath/ui";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import Link, { localeHref } from "@/components/Link";
+import { usePendingRouter } from "@/components/NavPending";
 import { readWishlist } from "@/components/WishlistButton";
 import { ApiError, api } from "@/lib/client";
 import { dateIST, money, timeIST } from "@/lib/format";
@@ -43,7 +44,7 @@ function splitPhone(e164: string | null): { cc: string; num: string } {
 export default function Checkout({ draftId }: { draftId: string }) {
   const t = useTranslations();
   const locale = useLocale();
-  const router = useRouter();
+  const router = usePendingRouter();
   const search = useSearchParams();
   const [draft, setDraft] = useState<Draft | null>(null);
   const [needLogin, setNeedLogin] = useState(false);
