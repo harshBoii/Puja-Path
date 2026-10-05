@@ -43,7 +43,7 @@ Tick every box before pointing the production domain at Puja Path. Items marked 
 - [ ] One real shipment booked, label printed, tracking messages received
 
 ## Infrastructure
-- [ ] Postgres 16 with daily backups and point-in-time recovery; `alembic upgrade head` run (the Neon DB was created before the mandate FK fix; see README)
+- [ ] Postgres 16 with daily backups and point-in-time recovery; `alembic upgrade head` run
 - [ ] Redis for the Arq worker; worker running with at least one replica
 - [ ] API behind HTTPS with several uvicorn workers; `APP_ENV=production` (disables `/v1/dev/*` and dev OTP codes)
 - [ ] R2 bucket + CDN custom domain (`R2_PUBLIC_BASE_URL`); Cloudflare Stream signing key set

@@ -33,9 +33,6 @@ The admin login comes from `ADMIN_EMAIL`/`ADMIN_PASSWORD` in `apps/api/.env`. TO
 
 ## Before launch
 See `docs/go-live.md`. Open items:
-- Neon DB: the FK `subscriptions.mandate_id → mandates.id` is missing. Run
-  `ALTER TABLE subscriptions ADD CONSTRAINT fk_subscriptions_mandate FOREIGN KEY (mandate_id) REFERENCES mandates(id);`
-  Neon is not seeded yet: `uv run python seed.py --catalog`.
 - `temples.presiding_deity` is a single language-neutral field, so it only shows on English pages.
   Translating it means adding it to `temple_translations` (a data-model change).
 - Real WATI/Gupshup, Razorpay/Cashfree and Shiprocket adapters follow their documented APIs but are untested against live accounts.
