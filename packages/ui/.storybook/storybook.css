@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "../src/tokens.css";
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=DM+Sans:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&family=Noto+Sans+Telugu:wght@400;600&family=Noto+Serif+Devanagari:wght@600&family=Noto+Serif+Tamil:wght@600&family=Noto+Serif+Telugu:wght@600&display=swap");
+@source "../src";
+
+html[lang="en"] { --font-display: "Cormorant Garamond", serif; --font-body: "DM Sans", sans-serif; }
+html[lang="hi"] { --font-display: "Noto Serif Devanagari", serif; --font-body: "Noto Sans Devanagari", "DM Sans", sans-serif; }
+html[lang="ta"] { --font-display: "Noto Serif Tamil", serif; --font-body: "Noto Sans Tamil", "DM Sans", sans-serif; }
+html[lang="te"] { --font-display: "Noto Serif Telugu", serif; --font-body: "Noto Sans Telugu", "DM Sans", sans-serif; }

@@ -1,0 +1,319 @@
+/* Marble & gold design tokens — PRD §11. The only place raw hex values live. */
+
+:root {
+  --marble-50: #fbf9f5;
+  --marble-100: #f4f0e8;
+  --marble-200: #e7e1d6;
+  --marble-400: #b9b1a4;
+  --surface: #ffffff;
+  --ink-900: #2b2118;
+  --ink-600: #5e5246;
+  --gold-100: #f6edd0;
+  --gold-300: #ead9a0;
+  --gold-500: #d4af37;
+  --gold-600: #b8922e;
+  --gold-700: #7a5c17;
+  --sindoor-600: #9e2a22;
+  --tulsi-600: #3e6b3a;
+  --whatsapp-green: #25d366; /* brand glyph only, never text */
+  /* decorative only: borders, ornaments, display text 32px and up */
+  --gold-foil: linear-gradient(135deg, #8c6a1f 0%, #d4af37 40%, #f3e3a3 55%, #b8922e 75%, #8c6a1f 100%);
+  --shadow-card: 0 1px 2px rgba(43, 33, 24, 0.06), 0 8px 24px rgba(43, 33, 24, 0.08);
+  --radius-card: 16px;
+  --radius-btn: 12px;
+  --radius-chip: 999px;
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+  /* Light theme only in v1; a "black marble" theme can redefine these names later. */
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-marble-50: var(--marble-50);
+  --color-marble-100: var(--marble-100);
+  --color-marble-200: var(--marble-200);
+  --color-marble-400: var(--marble-400);
+  --color-surface: var(--surface);
+  --color-ink-900: var(--ink-900);
+  --color-ink-600: var(--ink-600);
+  --color-gold-100: var(--gold-100);
+  --color-gold-300: var(--gold-300);
+  --color-gold-500: var(--gold-500);
+  --color-gold-600: var(--gold-600);
+  --color-gold-700: var(--gold-700);
+  --color-sindoor-600: var(--sindoor-600);
+  --color-tulsi-600: var(--tulsi-600);
+  --color-whatsapp: var(--whatsapp-green);
+  --shadow-card: var(--shadow-card);
+  --radius-card: var(--radius-card);
+  --radius-btn: var(--radius-btn);
+  --radius-chip: var(--radius-chip);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  /* type scale (mobile): rem so the browser font-size setting is respected */
+  --text-display: 2.125rem;
+  --text-display--line-height: 2.5rem;
+  --text-h1: 1.75rem;
+  --text-h1--line-height: 2.125rem;
+  --text-h2: 1.375rem;
+  --text-h2--line-height: 1.75rem;
+  --text-h3: 1.1875rem;
+  --text-h3--line-height: 1.625rem;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.6875rem;
+  --text-small: 0.9375rem;
+  --text-small--line-height: 1.375rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--marble-50);
+    color: var(--ink-900);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+  }
+  /* Indic scripts get taller line height for body text */
+  html[lang="hi"] body,
+  html[lang="ta"] body,
+  html[lang="te"] body {
+    line-height: 1.7;
+  }
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+  html[lang="hi"] :is(h1, h2, h3, .font-display),
+  html[lang="ta"] :is(h1, h2, h3, .font-display),
+  html[lang="te"] :is(h1, h2, h3, .font-display) {
+    line-height: 1.45;
+  }
+  a {
+    color: var(--gold-700);
+  }
+  :focus-visible {
+    outline: 3px solid var(--gold-600);
+    outline-offset: 2px;
+  }
+  @media (min-width: 768px) {
+    :root {
+      --text-display: 3rem;
+      --text-display--line-height: 3.5rem;
+      --text-h1: 2.25rem;
+      --text-h1--line-height: 2.75rem;
+      --text-h2: 1.75rem;
+      --text-h2--line-height: 2.25rem;
+      --text-h3: 1.375rem;
+      --text-h3--line-height: 1.875rem;
+      --text-body: 1.125rem;
+      --text-body--line-height: 1.75rem;
+    }
+  }
+}
+
+@layer components {
+  .pp-marble {
+    position: relative;
+    isolation: isolate;
+  }
+  .pp-marble::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: url("/images/marble-tile.webp");
+    background-size: 1200px;
+    opacity: 0.07;
+    pointer-events: none;
+  }
+  .pp-foil-text {
+    color: var(--ink-900);
+  }
+  @supports (-webkit-background-clip: text) or (background-clip: text) {
+    .pp-foil-text {
+      background: var(--gold-foil);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+  }
+  .pp-foil-border {
+    border: 2px solid transparent;
+    background:
+      linear-gradient(var(--surface), var(--surface)) padding-box,
+      var(--gold-foil) border-box;
+  }
+  .pp-hairline {
+    border-color: var(--gold-600);
+  }
+  .pp-arch {
+    -webkit-mask-image: url("/images/arch-mask.svg");
+    mask-image: url("/images/arch-mask.svg");
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+  }
+  .pp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0 1.25rem;
+    border-radius: var(--radius-btn);
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.2;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color 150ms,
+      border-color 150ms;
+  }
+  .pp-btn:disabled {
+    cursor: not-allowed;
+    background: var(--marble-200);
+    color: var(--ink-600);
+    box-shadow: none;
+    border-color: var(--marble-400);
+  }
+  .pp-btn-primary {
+    position: relative;
+    overflow: hidden;
+    background: var(--gold-500);
+    color: var(--ink-900);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  }
+  .pp-btn-primary:hover:not(:disabled) {
+    background: var(--gold-600);
+  }
+  @media (max-width: 767px) {
+    .pp-btn-primary {
+      min-height: 3.25rem;
+    }
+  }
+  @media (hover: hover) and (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+    .pp-btn-primary::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      transform: translateX(-120%);
+      background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+      transition: transform 700ms ease;
+    }
+    .pp-btn-primary:hover::after {
+      transform: translateX(120%);
+    }
+  }
+  .pp-btn-secondary {
+    background: transparent;
+    border: 1.5px solid var(--gold-600);
+    color: var(--gold-700);
+  }
+  .pp-btn-secondary:hover:not(:disabled) {
+    background: var(--gold-100);
+  }
+  .pp-btn-whatsapp {
+    background: var(--surface);
+    border: 1.5px solid var(--marble-200);
+    color: var(--ink-900);
+  }
+  .pp-btn-whatsapp:hover {
+    border-color: var(--gold-600);
+  }
+  .pp-link {
+    color: var(--gold-700);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .pp-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0 0.875rem;
+    border-radius: var(--radius-chip);
+    border: 1px solid var(--marble-200);
+    background: var(--surface);
+    color: var(--ink-900);
+    font-size: 0.9375rem;
+    white-space: nowrap;
+  }
+  .pp-chip[aria-pressed="true"],
+  .pp-chip[aria-current="true"],
+  .pp-chip[data-selected="true"] {
+    background: var(--gold-100);
+    border-color: var(--gold-600);
+  }
+  .pp-card {
+    background: var(--surface);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+  .pp-input {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: var(--radius-btn);
+    border: 1.5px solid var(--marble-400);
+    background: var(--surface);
+    color: var(--ink-900);
+    font-size: 1.0625rem;
+  }
+  .pp-input:focus {
+    border-color: var(--gold-600);
+    outline: none;
+    box-shadow: 0 0 0 3px var(--gold-100);
+  }
+  .pp-input[aria-invalid="true"] {
+    border-color: var(--sindoor-600);
+  }
+  .pp-gutter {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1200px;
+  }
+  @media (min-width: 768px) {
+    .pp-gutter {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+  .pp-scroll-x {
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .pp-scroll-x::-webkit-scrollbar {
+    display: none;
+  }
+  .pp-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .pp-clamp-6 {
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

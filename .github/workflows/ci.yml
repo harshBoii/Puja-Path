@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Everything runs on fake providers: no test ever hits a real BSP, gateway or courier (PRD §3).
+env:
+  MESSAGING_PROVIDER: fake
+  PAYMENT_PROVIDER: fake
+  SHIPPING_PROVIDER: fake
+  SMS_OTP_PROVIDER: fake
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: postgres, POSTGRES_PASSWORD: postgres, POSTGRES_DB: pujapath_test }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+    defaults: { run: { working-directory: apps/api } }
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pujapath_test
+      TEST_REDIS_URL: redis://localhost:6379/15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: uv sync
+      - run: uv run ruff check .
+      - run: uv run pytest -q
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Locale files (key parity, placeholders, no literal hour counts)
+        run: node packages/locales/scripts/check-locales.mjs
+      - run: pnpm --filter @pujapath/web typecheck
+      - name: ESLint (includes pujapath/no-raw-internal-link)
+        run: pnpm --filter @pujapath/web lint
+      - run: pnpm --filter @pujapath/ui build-storybook
+
+  e2e:
+    needs: [api, web]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: postgres, POSTGRES_PASSWORD: postgres, POSTGRES_DB: pujapath }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+    env:
+      APP_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pujapath
+      REDIS_URL: redis://localhost:6379/0
+      JWT_SECRET: ci-secret
+      REVALIDATE_SECRET: ci-revalidate
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      WEB_INTERNAL_URL: http://localhost:3000
+      API_URL: http://localhost:8000
+      ADMIN_EMAIL: admin@ci.local
+      ADMIN_PASSWORD: ci-admin-password
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: API + seed
+        working-directory: apps/api
+        run: |
+          uv sync
+          uv run alembic upgrade head
+          uv run python seed.py --catalog
+          nohup uv run uvicorn main:app --port 8000 > ../../api.log 2>&1 &
+      - name: Build and start the storefront
+        working-directory: apps/web
+        run: |
+          pnpm build
+          nohup pnpm start > ../../web.log 2>&1 &
+          npx wait-on -t 60000 http://localhost:3000/en
+      - name: Every route per locale under 2% foreign script; zoom allowed
+        working-directory: apps/web
+        run: node scripts/script-detection.mjs http://localhost:3000
+      - name: JS budget (under 200 KB gzipped on listing and detail pages)
+        working-directory: apps/web
+        run: node scripts/js-budget.mjs http://localhost:3000
+      - name: Detail page to confirmed, in a browser
+        working-directory: apps/web
+        run: |
+          npx playwright-core install chromium
+          node e2e/journey.mjs http://localhost:3000
+      - name: Lighthouse (mobile; performance >= 90, accessibility >= 95 on home, listing, detail)
+        working-directory: apps/web
+        run: npx -y @lhci/cli@0.14 autorun
+      - if: failure()
+        run: tail -n 200 api.log web.log

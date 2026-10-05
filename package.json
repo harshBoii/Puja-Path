@@ -1,0 +1,14 @@
+{
+  "name": "puja-path",
+  "private": true,
+  "packageManager": "pnpm@10.34.6",
+  "scripts": {
+    "dev:web": "pnpm --filter @pujapath/web dev",
+    "build:web": "pnpm --filter @pujapath/web build",
+    "lint": "pnpm --filter @pujapath/web lint",
+    "storybook": "pnpm --filter @pujapath/ui storybook",
+    "check:locales": "node packages/locales/scripts/check-locales.mjs",
+    "check:scripts": "node apps/web/scripts/script-detection.mjs",
+    "gen:api": "pnpm --filter @pujapath/web gen:api"
+  }
+}

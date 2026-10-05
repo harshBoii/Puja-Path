@@ -1,0 +1,46 @@
+[project]
+name = "pujapath-api"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "sqlalchemy[asyncio]>=2.0.30",
+  "psycopg[binary]>=3.2",
+  "alembic>=1.13",
+  "pydantic>=2.7",
+  "pydantic-settings>=2.3",
+  "arq>=0.26",
+  "httpx>=0.27",
+  "pyjwt[crypto]>=2.8",
+  "pyotp>=2.9",
+  "bcrypt>=4.1",
+  "python-multipart>=0.0.9",
+  "babel>=2.15",
+  "fpdf2>=2.8",
+  "uharfbuzz>=0.39",
+  "indic-transliteration>=2.3",
+  "boto3>=1.34",
+  "sentry-sdk[fastapi]>=2.5",
+  "pillow>=10.3",
+  "python-dateutil>=2.9",
+  "tzdata>=2024.1",
+  "email-validator>=2.3.0",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "respx>=0.21", "ruff>=0.5"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "BLE", "DTZ", "RUF100"]
+ignore = ["B008", "E501"]  # B008: FastAPI's Depends() default-argument idiom

@@ -1,0 +1,16 @@
+node_modules/
+.next/
+.env
+.env.local
+*.env.local
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+storybook-static/
+apps/api/var/
+*.tsbuildinfo
+.DS_Store
+.dual-graph/
+.claude/settings.local.json
+.lighthouseci/

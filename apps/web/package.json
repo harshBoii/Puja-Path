@@ -1,0 +1,35 @@
+{
+  "name": "@pujapath/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "gen:api": "openapi-typescript http://localhost:8000/openapi.json -o lib/api-types.ts"
+  },
+  "dependencies": {
+    "@pujapath/locales": "workspace:*",
+    "@pujapath/ui": "workspace:*",
+    "hls.js": "^1.6.0",
+    "next": "^16.0.0",
+    "next-intl": "^4.4.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.0",
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "eslint": "^9.30.0",
+    "eslint-config-next": "^16.0.0",
+    "openapi-typescript": "^7.9.0",
+    "playwright-core": "^1.63.0",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.9.0"
+  }
+}

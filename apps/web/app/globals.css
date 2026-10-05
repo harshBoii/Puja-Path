@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@import "@pujapath/ui/tokens.css";
+@source "../../../packages/ui/src";
+
+/* Currency is chosen client-side before paint (see components/Price.tsx). */
+html:not([data-currency="USD"]) [data-cur="USD"],
+html[data-currency="USD"] [data-cur="INR"] {
+  display: none;
+}
+
+/* Rich text from the CMS */
+.pp-prose p { margin: 0 0 0.875rem; }
+.pp-prose p:last-child { margin-bottom: 0; }

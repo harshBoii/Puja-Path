@@ -1,0 +1,15 @@
+{
+  "name": "@pujapath/locales",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./en.json": "./en.json",
+    "./hi.json": "./hi.json",
+    "./ta.json": "./ta.json",
+    "./te.json": "./te.json"
+  },
+  "scripts": {
+    "check": "node scripts/check-locales.mjs"
+  }
+}
