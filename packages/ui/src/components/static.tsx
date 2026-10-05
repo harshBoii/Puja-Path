@@ -150,7 +150,7 @@ export function PujaCard({ href, image, chip, title, temple, venue, dateLabel, p
   action?: ReactNode;
 }) {
   return (
-    <article className={cx("pp-card relative flex h-full flex-col overflow-hidden", featured && "border border-gold-600")}>
+    <article className={cx("pp-card group relative flex h-full flex-col overflow-hidden", featured && "border border-gold-600")}>
       <div className="relative aspect-[4/3] bg-marble-100">
         {image && (
           <img src={image.url} srcSet={image.srcset} sizes="(min-width: 768px) 33vw, 90vw" alt={image.alt}
@@ -174,7 +174,8 @@ export function PujaCard({ href, image, chip, title, temple, venue, dateLabel, p
         )}
         <div className="mt-auto flex items-center justify-between gap-3 pt-3">
           <span className="text-small font-semibold text-ink-900">{priceLabel}</span>
-          <span className="pp-btn pp-btn-primary relative z-10 min-h-12 px-4 text-small" aria-hidden="true">{bookLabel}</span>
+          {/* Visual only: clicks pass through to the card link (the title's stretched ::after) */}
+          <span className="pp-btn pp-btn-primary pointer-events-none min-h-12 px-4 text-small group-hover:shadow-md" aria-hidden="true">{bookLabel}</span>
         </div>
       </div>
     </article>
