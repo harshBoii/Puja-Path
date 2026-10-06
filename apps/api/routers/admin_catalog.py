@@ -4,7 +4,7 @@ import re
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db import get_db
@@ -12,16 +12,23 @@ from deps import require_role
 from models import (
     AddonItem,
     AddonItemTranslation,
+    Booking,
+    BookingAddon,
+    CallbackRequest,
+    Campaign,
     FaqEntry,
+    MediaAsset,
     Package,
     PackageCode,
     PublishStatus,
     Puja,
+    PujaEvent,
     PujaKind,
     PujaTranslation,
     SevaPlan,
     StaffRole,
     StaffUser,
+    Subscription,
     Temple,
     TempleTranslation,
     VenueType,
@@ -323,6 +330,26 @@ async def set_addons(puja_id: int, body: list[AddonIn], db: AsyncSession = Depen
                                             description=tr.get("description")))
     await audit(db, staff.id, "puja.addons", "puja", p.id, [x.model_dump() for x in body])
     await db.commit()
+    if p.status == PublishStatus.published:
+        await revalidate(puja_tags(p.id))
+    return await _puja_admin(db, p)
+
+
+@router.delete("/pujas/{puja_id}/addons/{addon_id}")
+async def delete_addon(puja_id: int, addon_id: int, db: AsyncSession = Depends(get_db),
+                       staff: StaffUser = Depends(editor)):
+    """Removes an item nobody has ordered. Ordered items stay on those bookings: deactivate them instead."""
+    a = await db.get(AddonItem, addon_id)
+    if a is None or a.puja_id != puja_id:
+        raise HTTPException(404, "not_found")
+    if await db.scalar(select(func.count()).select_from(BookingAddon).where(BookingAddon.addon_item_id == a.id)):
+        raise HTTPException(409, "addon_ordered_deactivate_instead")
+    await db.delete(a)
+    await audit(db, staff.id, "puja.addon_delete", "puja", puja_id, {"addon_id": addon_id})
+    await db.commit()
+    p = await db.get(Puja, puja_id)
+    if p.status == PublishStatus.published:
+        await revalidate(puja_tags(p.id))
     return await _puja_admin(db, p)
 
 
@@ -346,6 +373,8 @@ async def set_seva_plan(puja_id: int, body: SevaPlanIn, db: AsyncSession = Depen
             setattr(plan, k, v)
     await audit(db, staff.id, "puja.seva_plan", "puja", p.id, body.model_dump())
     await db.commit()
+    if p.status == PublishStatus.published:
+        await revalidate(puja_tags(p.id))
     return await _puja_admin(db, p)
 
 
@@ -397,6 +426,33 @@ async def unpublish(puja_id: int, body: PublishIn, db: AsyncSession = Depends(ge
     await db.commit()
     await revalidate(puja_tags(p.id))
     return {"ok": True}
+
+
+@router.delete("/pujas/{puja_id}")
+async def delete_puja(puja_id: int, db: AsyncSession = Depends(get_db), staff: StaffUser = Depends(editor)):
+    """Deletes a puja with its dates, packages, items and copy — only if nobody ever booked it.
+    Booked pujas keep their history: unpublish them instead."""
+    p = await db.get(Puja, puja_id)
+    if p is None:
+        raise HTTPException(404, "not_found")
+    event_ids = select(PujaEvent.id).where(PujaEvent.puja_id == p.id)
+    booked = await db.scalar(select(func.count()).select_from(Booking).where(Booking.puja_event_id.in_(event_ids)))
+    booked = booked or await db.scalar(select(func.count()).select_from(Subscription).where(
+        Subscription.package_id.in_(select(Package.id).where(Package.puja_id == p.id))))
+    if booked:
+        raise HTTPException(409, "has_bookings_unpublish_instead")
+    await db.execute(update(MediaAsset).where(MediaAsset.puja_event_id.in_(event_ids)).values(puja_event_id=None))
+    await db.execute(update(CallbackRequest).where(CallbackRequest.puja_id == p.id).values(puja_id=None))
+    await db.execute(update(Campaign).where(Campaign.puja_id == p.id).values(puja_id=None))
+    en = tr_for(p.translations, "en")
+    title = en.title if en else p.slug
+    db.expunge(p)
+    # The database cascades to dates, packages, items, copy, seva plan and wishlists.
+    await db.execute(delete(Puja).where(Puja.id == puja_id))
+    await audit(db, staff.id, "puja.delete", "puja", puja_id, {"title": title})
+    await db.commit()
+    await revalidate([*puja_tags(puja_id), "listing", "home"])
+    return {"result": "deleted"}
 
 
 @router.get("/pujas/{puja_id}/preview/{locale}")

@@ -1,8 +1,10 @@
 "use client";
 import { DiyaLoader, cx } from "@pujapath/ui";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 
+import { EventsManager } from "@/components/admin/EventsManager";
 import { Badge, Card, Field, PageTitle, statusTone, useAction, useApi } from "@/components/admin/ui";
 import { resumableUpload } from "@/components/admin/upload";
 import { api } from "@/lib/client";
@@ -27,6 +29,8 @@ type Err = { locale: string | null; field: string; code: string };
 const emptyTr = (): Tr => ({ title: "", subtitle: "", occasion_chip: "", about_md: "", benefits: [], rituals: [], faqs: [],
   meta_title: "", meta_description: "" });
 const csv = (a: string[] | null | undefined) => (a ?? []).join(", ");
+/** Stored keys are absolute URLs (R2/seed) or storage keys served through /media. */
+const mediaSrc = (key: string) => (/^(https?:)?\/\//.test(key) || key.startsWith("/") ? key : `/media/${key}`);
 const list = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
 export default function PujaEditor({ params }: { params: Promise<{ id: string }> }) {
@@ -91,10 +95,13 @@ export default function PujaEditor({ params }: { params: Promise<{ id: string }>
         </div>
       </Card>
 
-      <Images puja={p} set={set} />
+      <Card title="Dates" actions={<Link href={`/admin/events?puja_id=${p.id}`} className="pp-link">All events</Link>}>
+        <EventsManager pujaId={p.id} />
+      </Card>
+      <Images puja={p} set={set} onSave={saveBase} busy={busy} />
       <Packages puja={p} onSaved={reload} />
       {p.kind === "seva" && <SevaPlan puja={p} onSaved={reload} />}
-      <Addons puja={p} onSaved={reload} />
+      <Addons puja={p} onSaved={setData} />
 
       <Card title="Translations" actions={<button className="pp-btn pp-btn-primary min-h-10" disabled={busy}
         onClick={() => publish(LOCALES.filter((l) => p.translations[l]))}>Publish all saved locales</button>}>
@@ -117,7 +124,32 @@ export default function PujaEditor({ params }: { params: Promise<{ id: string }>
           </div>
         </div>
       </Card>
+
+      <DangerZone puja={p} onChanged={reload} />
     </>
+  );
+}
+
+function DangerZone({ puja, onChanged }: { puja: Puja; onChanged: () => void }) {
+  const router = useRouter();
+  const { run, busy, view } = useAction();
+  const live = LOCALES.filter((l) => puja.translations[l]?.published);
+  const title = puja.translations.en?.title || puja.slug;
+  return (
+    <Card title="Remove" className="border border-sindoor-600/50">
+      {view}
+      <div className="flex flex-wrap gap-3">
+        <button type="button" className="pp-btn pp-btn-secondary" disabled={busy || !live.length} onClick={() => {
+          if (!window.confirm(`Hide “${title}” from the site in all languages? Existing bookings are not affected.`)) return;
+          run(async () => { await api(`/admin/pujas/${puja.id}/unpublish`, { method: "POST", json: { locales: live } }); onChanged(); }, "Unpublished: hidden from the site.");
+        }}>Unpublish everywhere</button>
+        <button type="button" className="pp-btn border border-sindoor-600 text-sindoor-600" disabled={busy} onClick={() => {
+          if (window.prompt(`This permanently deletes “${title}” with its dates, packages, items and copy.\nType DELETE to confirm.`) !== "DELETE") return;
+          run(async () => { await api(`/admin/pujas/${puja.id}`, { method: "DELETE" }); router.push("/admin/catalog"); }, "Puja deleted.");
+        }}>Delete puja</button>
+      </div>
+      <p className="mt-2 text-small text-ink-600">Pujas that were ever booked can&apos;t be deleted; unpublish them instead.</p>
+    </Card>
   );
 }
 
@@ -163,27 +195,41 @@ function ListEditor({ label, rows, onChange }: { label: string; rows: string[]; 
   );
 }
 
-function Images({ puja, set }: { puja: Puja; set: (p: Partial<Puja>) => void }) {
+function Images({ puja, set, onSave, busy }: { puja: Puja; set: (p: Partial<Puja>) => void; onSave: () => void; busy: boolean }) {
   const [pct, setPct] = useState<number | null>(null);
   const [alt, setAlt] = useState<Record<L, string>>({ en: "", hi: "", ta: "", te: "" });
+  const move = (i: number, to: number) => {
+    const next = [...puja.images];
+    const [img] = next.splice(i, 1);
+    next.splice(to, 0, img);
+    set({ images: next });
+  };
   return (
-    <Card title="Images (up to 6, alt text required per locale)">
+    <Card title="Images (up to 6; the first is the cover)" actions={<button className="pp-btn pp-btn-primary min-h-10" disabled={busy} onClick={onSave}>Save images</button>}>
       <ul className="mb-3 grid gap-3 sm:grid-cols-3">
         {puja.images.map((img, i) => (
           <li key={img.key} className="rounded-btn border border-marble-200 p-2 text-small">
-            <img src={/^(https?:)?\/\//.test(img.key) || img.key.startsWith("/") ? img.key : `/media/${img.key}`} alt={img.alt.en ?? ""} className="mb-1 aspect-[4/3] w-full rounded-btn object-cover" />
+            <div className="relative">
+              <img src={mediaSrc(img.key)} alt={img.alt.en ?? ""} className="mb-1 aspect-[4/3] w-full rounded-btn object-cover" />
+              {i === 0 && <span className="absolute left-2 top-2"><Badge>Cover</Badge></span>}
+            </div>
             {LOCALES.map((l) => (
-              <input key={l} lang={l} className="pp-input mb-1 min-h-9 py-1 text-small" placeholder={`alt (${l})`} value={img.alt[l] ?? ""}
+              <input key={l} lang={l} className="pp-input mb-1 min-h-9 py-1 text-small" placeholder={`alt (${l})`} aria-label={`Alt text (${l})`} value={img.alt[l] ?? ""}
                 onChange={(e) => set({ images: puja.images.map((x, k) => (k === i ? { ...x, alt: { ...x.alt, [l]: e.target.value } } : x)) })} />
             ))}
-            <button className="pp-link" onClick={() => set({ images: puja.images.filter((_, k) => k !== i) })}>Remove</button>
+            <div className="flex flex-wrap items-center gap-3">
+              <button type="button" className="pp-link" disabled={i === 0} onClick={() => move(i, i - 1)} aria-label="Move earlier">←</button>
+              <button type="button" className="pp-link" disabled={i === puja.images.length - 1} onClick={() => move(i, i + 1)} aria-label="Move later">→</button>
+              {i > 0 && <button type="button" className="pp-link" onClick={() => move(i, 0)}>Make cover</button>}
+              <button type="button" className="pp-link text-sindoor-600" onClick={() => set({ images: puja.images.filter((_, k) => k !== i) })}>Remove</button>
+            </div>
           </li>
         ))}
       </ul>
       {puja.images.length < 6 && (
         <div className="grid gap-2 sm:grid-cols-5">
-          {LOCALES.map((l) => <input key={l} lang={l} className="pp-input" placeholder={`alt (${l})`} value={alt[l]} onChange={(e) => setAlt({ ...alt, [l]: e.target.value })} />)}
-          <input type="file" accept="image/*" disabled={pct !== null || LOCALES.some((l) => !alt[l].trim())} onChange={async (e) => {
+          {LOCALES.map((l) => <input key={l} lang={l} className="pp-input" placeholder={`alt (${l})`} aria-label={`New image alt text (${l})`} value={alt[l]} onChange={(e) => setAlt({ ...alt, [l]: e.target.value })} />)}
+          <input type="file" accept="image/*" aria-label="Upload image" disabled={pct !== null || LOCALES.some((l) => !alt[l].trim())} onChange={async (e) => {
             const f = e.target.files?.[0];
             if (!f) return;
             setPct(0);
@@ -196,7 +242,7 @@ function Images({ puja, set }: { puja: Puja; set: (p: Partial<Puja>) => void }) 
         </div>
       )}
       {pct !== null && <progress max={100} value={pct} className="mt-2 w-full" />}
-      <p className="mt-2 text-small text-ink-600">Remember to Save the facts card to keep image changes.</p>
+      <p className="mt-2 text-small text-ink-600">Write the alt text in all four languages, then choose a file. Click “Save images” to keep changes.</p>
     </Card>
   );
 }
@@ -242,31 +288,78 @@ function SevaPlan({ puja, onSaved }: { puja: Puja; onSaved: () => void }) {
   );
 }
 
-function Addons({ puja, onSaved }: { puja: Puja; onSaved: () => void }) {
-  const [rows, setRows] = useState(puja.addons);
+type Addon = Puja["addons"][number];
+
+function Addons({ puja, onSaved }: { puja: Puja; onSaved: (p: Puja) => void }) {
+  const [rows, setRows] = useState<Addon[]>(puja.addons);
+  const [uploading, setUploading] = useState<number | null>(null);
+  useEffect(() => setRows(puja.addons), [puja.addons]); // eslint-disable-line react-hooks/set-state-in-effect -- reset after save
   const { run, busy, view } = useAction();
-  const blank = { id: 0, image_key: null, price_inr_minor: 0, price_usd_minor: 0, max_qty: 1, ships_home: false, active: true,
-    translations: { en: { name: "", description: null } } } as Puja["addons"][number];
+  const up = (i: number, patch: Partial<Addon>) => setRows(rows.map((x, k) => (k === i ? { ...x, ...patch } : x)));
+  const tr = (i: number, l: L, patch: Partial<{ name: string; description: string | null }>) => {
+    const cur = rows[i].translations[l] ?? { name: "", description: null };
+    up(i, { translations: { ...rows[i].translations, [l]: { ...cur, ...patch } } });
+  };
+  const blank: Addon = { id: 0, image_key: null, price_inr_minor: 0, price_usd_minor: 0, max_qty: 1, ships_home: false, active: true,
+    translations: { en: { name: "", description: null } } };
   return (
-    <Card title="Chadhava add-ons" actions={<button className="pp-btn pp-btn-primary min-h-10" disabled={busy}
-      onClick={() => run(async () => { await api(`/admin/pujas/${puja.id}/addons`, { method: "PUT", json: rows.map((r) => ({ ...r, id: r.id || null })) }); onSaved(); }, "Add-ons saved.")}>Save</button>}>
+    <Card title="Chadhava items (add-ons)" actions={<button className="pp-btn pp-btn-primary min-h-10" disabled={busy}
+      onClick={() => run(async () => { onSaved(await api<Puja>(`/admin/pujas/${puja.id}/addons`, { method: "PUT", json: rows.map((r) => ({ ...r, id: r.id || null })) })); }, "Items saved.")}>Save items</button>}>
       {view}
       {rows.map((a, i) => (
-        <div key={i} className={cx("mb-3 grid gap-2 rounded-btn border border-marble-200 p-2 sm:grid-cols-4", !a.active && "opacity-60")}>
-          {LOCALES.map((l) => (
-            <input key={l} lang={l} className="pp-input" placeholder={`name (${l})`} value={a.translations[l]?.name ?? ""}
-              onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, translations: { ...x.translations, [l]: { name: e.target.value, description: null } } } : x)))} />
-          ))}
-          <input type="number" className="pp-input" placeholder="₹" value={a.price_inr_minor / 100} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, price_inr_minor: Math.round(Number(e.target.value) * 100) } : x)))} aria-label="Price INR" />
-          <input type="number" className="pp-input" placeholder="$" value={a.price_usd_minor / 100} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, price_usd_minor: Math.round(Number(e.target.value) * 100) } : x)))} aria-label="Price USD" />
-          <input type="number" className="pp-input" value={a.max_qty} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, max_qty: Number(e.target.value) } : x)))} aria-label="Max quantity" />
-          <div className="flex items-center gap-3 text-small">
-            <label className="flex items-center gap-1"><input type="checkbox" checked={a.ships_home} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, ships_home: e.target.checked } : x)))} /> ships home</label>
-            <label className="flex items-center gap-1"><input type="checkbox" checked={a.active} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, active: e.target.checked } : x)))} /> active</label>
+        <div key={a.id || `new-${i}`} className={cx("mb-4 rounded-btn border border-gold-line p-3", !a.active && "opacity-70")}>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p className="font-semibold">{a.translations.en?.name || "New item"}{!a.active && " (hidden)"}</p>
+            <button type="button" className="pp-link text-sindoor-600" onClick={() => {
+              if (!a.id) { setRows(rows.filter((_, k) => k !== i)); return; }
+              if (!window.confirm(`Delete “${a.translations.en?.name || "this item"}”?`)) return;
+              run(async () => { onSaved(await api<Puja>(`/admin/pujas/${puja.id}/addons/${a.id}`, { method: "DELETE" })); }, "Item deleted.");
+            }}>Delete item</button>
+          </div>
+          <div className="grid gap-3 lg:grid-cols-[10rem_1fr]">
+            <div>
+              {a.image_key
+                ? <img src={mediaSrc(a.image_key)} alt="" className="mb-1 aspect-square w-full rounded-btn border border-marble-200 object-cover" />
+                : <div className="mb-1 flex aspect-square w-full items-center justify-center rounded-btn border border-dashed border-marble-400 text-small text-ink-600">No image</div>}
+              <label className="pp-link block cursor-pointer text-small">
+                {uploading === i ? "Uploading…" : a.image_key ? "Replace image" : "Upload image"}
+                <input type="file" accept="image/*" className="sr-only" disabled={uploading !== null} onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (!f) return;
+                  const alt = Object.fromEntries(LOCALES.map((l) => [l, a.translations[l]?.name ?? ""]).filter(([, v]) => v));
+                  if (!Object.keys(alt).length) { window.alert("Enter the item's name first (it is used as the image description)."); return; }
+                  setUploading(i);
+                  try { up(i, { image_key: String((await resumableUpload(f, { purpose: "image", temple_id: puja.temple_id, alt })).key) }); }
+                  finally { setUploading(null); }
+                }} />
+              </label>
+              {a.image_key && <button type="button" className="pp-link text-small text-sindoor-600" onClick={() => up(i, { image_key: null })}>Remove image</button>}
+            </div>
+            <div className="space-y-3">
+              <div className="grid gap-2 sm:grid-cols-2">
+                {LOCALES.map((l) => (
+                  <div key={l} lang={l} className="space-y-1">
+                    <Field label={`Name (${l})`}><input className="pp-input" value={a.translations[l]?.name ?? ""} onChange={(e) => tr(i, l, { name: e.target.value })} /></Field>
+                    <textarea className="pp-input min-h-16 text-small" placeholder={`Description (${l}, optional)`} aria-label={`Description (${l})`}
+                      value={a.translations[l]?.description ?? ""} onChange={(e) => tr(i, l, { description: e.target.value || null })} />
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 items-end gap-2 sm:grid-cols-4">
+                <Field label="Price ₹"><input type="number" min={0} className="pp-input" value={a.price_inr_minor / 100} onChange={(e) => up(i, { price_inr_minor: Math.round(Number(e.target.value) * 100) })} /></Field>
+                <Field label="Price $"><input type="number" min={0} step="0.01" className="pp-input" value={a.price_usd_minor / 100} onChange={(e) => up(i, { price_usd_minor: Math.round(Number(e.target.value) * 100) })} /></Field>
+                <Field label="Max quantity"><input type="number" min={1} max={50} className="pp-input" value={a.max_qty} onChange={(e) => up(i, { max_qty: Number(e.target.value) })} /></Field>
+                <div className="space-y-1 pb-2 text-small">
+                  <label className="flex items-center gap-2"><input type="checkbox" checked={a.ships_home} onChange={(e) => up(i, { ships_home: e.target.checked })} /> Ships home</label>
+                  <label className="flex items-center gap-2"><input type="checkbox" checked={a.active} onChange={(e) => up(i, { active: e.target.checked })} /> Shown on site</label>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       ))}
-      <button className="pp-link" onClick={() => setRows([...rows, blank])}>+ add item</button>
+      <button type="button" className="pp-btn pp-btn-secondary" onClick={() => setRows([...rows, blank])}>+ Add item</button>
+      <p className="mt-2 text-small text-ink-600">Click “Save items” to keep changes. Items that were ever ordered can only be hidden, not deleted.</p>
     </Card>
   );
 }

@@ -187,7 +187,7 @@ async def start_payment(db: AsyncSession, b: Booking, user: User, *, payment_mod
     if b.status not in (S.draft, S.pending_payment):
         raise BookingError("not_payable")
     ev = b.event
-    if ev.booking_cutoff_at <= utcnow():
+    if ev.booking_cutoff_at <= utcnow() or ev.status.value != "scheduled":
         raise BookingError("event_closed")
     if not b.names or not b.whatsapp_e164 or not b.consent_whatsapp_at:
         raise BookingError("incomplete")

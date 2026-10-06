@@ -138,20 +138,37 @@ export function useApi<T>(path: string | null) {
 }
 
 /** Runs an admin action and reports the outcome inline. */
+/** Plain-English messages for API error codes admins can hit. Unknown codes are shown as-is. */
+const ADMIN_ERRORS: Record<string, string> = {
+  has_bookings_use_reschedule: "Devotees have already paid for this date. Use “Reschedule” on the event page so they are told and can choose a refund.",
+  has_bookings: "Devotees have paid for this date, so it can't be deleted. Use “Cancel and refund all” or “Reschedule” on the event page.",
+  payment_in_progress: "A devotee is paying for this date right now. Try again in a few minutes.",
+  event_locked: "The sankalp sheet is locked, so the date and booking cutoff can no longer change.",
+  event_closed: "This event has already started or finished, so it can't be changed.",
+  starts_in_past: "The start time must be in the future.",
+  cutoff_in_past: "With that cutoff, bookings would already be closed. Choose a later date or fewer cutoff hours.",
+  has_bookings_unpublish_instead: "This puja has bookings, so it can't be deleted. Unpublish it to hide it from the site.",
+  addon_ordered_deactivate_instead: "Devotees have ordered this item, so it can't be deleted. Untick “active” to hide it instead.",
+  bad_rrule: "The repeat rule isn't valid.",
+  alt_text_required: "Add a description (alt text) for the image first.",
+};
+
 export function useAction() {
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
-  const run = useCallback(async (fn: () => Promise<unknown>, ok = "Done.") => {
+  const run = useCallback(async <R,>(fn: () => Promise<R>, ok: string | ((result: R) => string) = "Done.") => {
     // Spin the button that started the action: the clicked button, or the submit button of the focused form.
     const el = document.activeElement;
     const btn = el instanceof HTMLButtonElement ? el : el instanceof HTMLElement ? el.closest("form")?.querySelector<HTMLButtonElement>("button:not([type=button])") : null;
     btn?.setAttribute("aria-busy", "true");
     setBusy(true);
     setMsg(null);
-    try { await fn(); setMsg({ text: ok, ok: true }); return true; }
+    try { const result = await fn(); setMsg({ text: typeof ok === "function" ? ok(result) : ok, ok: true }); return true; }
     catch (e) {
       const detail = e instanceof ApiError ? e.detail : null;
-      const text = e instanceof ApiError ? (typeof detail === "object" && detail ? JSON.stringify(detail) : e.code) : String(e);
+      const text = e instanceof ApiError
+        ? ADMIN_ERRORS[e.code] ?? (typeof detail === "object" && detail ? JSON.stringify(detail) : e.code)
+        : e instanceof Error ? e.message : String(e);
       setMsg({ text, ok: false });
       return false;
     } finally { btn?.removeAttribute("aria-busy"); setBusy(false); }

@@ -1,15 +1,15 @@
 "use client";
 import { DiyaLoader } from "@pujapath/ui";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { use, useMemo, useRef, useState } from "react";
 
+import { EventEditForm, type AdminEvent } from "@/components/admin/EventsManager";
 import { Badge, Card, Field, PageTitle, fmtDate, statusTone, useAction, useApi } from "@/components/admin/ui";
 import { resumableUpload, type UploadPurpose } from "@/components/admin/upload";
 import { api } from "@/lib/client";
 
-type Ev = { id: number; puja_id: number; title: string; temple: string; starts_at: string; booking_cutoff_at: string; status: string;
-  locked: boolean; booking_count: number; sankalp_video: boolean; full_video: { url: string } | null; sla_due_at: string;
-  photos: { url: string }[] };
+type Ev = AdminEvent & { locked: boolean; sankalp_video: boolean; full_video: { url: string } | null; photos: { url: string }[] };
 type Row = { position: number; booking_id: string; code: string; status: string; wish: string | null;
   names: { name: string; name_sankalp: string; relation: string | null; gotra: string; gotra_sankalp: string; gotra_unknown: boolean; nakshatra: string | null }[] };
 type Clip = { id: string; booking_id: string; code: string; position: number | null; start_ms: number; end_ms: number | null; url: string | null;
@@ -19,6 +19,7 @@ type Clips = { sankalp_video_url: string | null; clips: Clip[]; qc: { required_s
 /** Per event: 1 sheet → 2 Started → 3 uploads → 4 marker tool + QC → 5 Performed (PRD §10.4). */
 export default function EventOps({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const router = useRouter();
   const ev = useApi<Ev>(`/admin/events/${id}`);
   const sheet = useApi<{ rows: Row[]; sankalp_language: string }>(`/admin/events/${id}/sheet`);
   const clips = useApi<Clips>(`/admin/events/${id}/clips`);
@@ -32,6 +33,13 @@ export default function EventOps({ params }: { params: Promise<{ id: string }> }
       <PageTitle actions={<Badge tone={statusTone(e.status)}>{e.status}</Badge>}>{e.title}</PageTitle>
       <p className="-mt-3 mb-4 text-ink-600">{e.temple} · {fmtDate(e.starts_at)} IST · cutoff {fmtDate(e.booking_cutoff_at)} · SLA due {fmtDate(e.sla_due_at)} · {e.booking_count} bookings</p>
       {view}
+
+      <Card title="Date and timings" actions={<Link href={`/admin/catalog/${e.puja_id}`} className="pp-btn pp-btn-secondary min-h-10">Edit puja</Link>}>
+        <div className="max-w-xl">
+          <EventEditForm key={`${e.starts_at}-${e.booking_cutoff_at}-${e.video_sla_hours}`} ev={e} onSaved={reloadAll}
+            onDeleted={() => router.push(`/admin/events?puja_id=${e.puja_id}`)} />
+        </div>
+      </Card>
 
       <Card title="1. Sankalp sheet" actions={<div className="flex flex-wrap gap-2">
         {!e.locked && <button className="pp-btn pp-btn-secondary min-h-10" disabled={busy}

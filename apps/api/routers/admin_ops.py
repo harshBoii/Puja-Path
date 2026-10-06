@@ -5,11 +5,12 @@ import shutil
 import uuid
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import settings
@@ -18,6 +19,7 @@ from deps import require_role
 from models import (
     Booking,
     BookingStatus,
+    EventStatus,
     MediaAsset,
     ProofClip,
     Puja,
@@ -47,31 +49,74 @@ UPLOAD_DIR = settings.local_media_dir.parent / "uploads"
 S = BookingStatus
 
 
-async def _event_row(db: AsyncSession, ev: PujaEvent) -> dict:
-    counts = dict((await db.execute(
-        select(Booking.status, func.count()).where(Booking.puja_event_id == ev.id).group_by(Booking.status)
-    )).all())
-    paid = sum(v for k, v in counts.items() if k not in (S.draft, S.pending_payment, S.cancelled, S.refunded))
-    return {"id": ev.id, "puja_id": ev.puja_id, "title": await puja_title(db, ev.puja_id, "en"),
-            "temple": await temple_name(db, ev.puja.temple_id, "en"), "starts_at": ev.starts_at.isoformat(),
-            "booking_cutoff_at": ev.booking_cutoff_at.isoformat(), "video_sla_hours": ev.video_sla_hours,
+UNPAID = (S.draft, S.pending_payment, S.cancelled, S.refunded)
+
+
+async def _status_counts(db: AsyncSession, event_ids: list[int]) -> dict[int, dict]:
+    rows = (await db.execute(select(Booking.puja_event_id, Booking.status, func.count())
+                             .where(Booking.puja_event_id.in_(event_ids))
+                             .group_by(Booking.puja_event_id, Booking.status))).all() if event_ids else []
+    out: dict[int, dict] = {}
+    for ev_id, status, n in rows:
+        out.setdefault(ev_id, {})[status] = n
+    return out
+
+
+async def _event_row(db: AsyncSession, ev: PujaEvent, counts: dict | None = None, names: dict | None = None) -> dict:
+    """`counts` and `names` let list views batch the per-event queries."""
+    if counts is None:
+        counts = (await _status_counts(db, [ev.id])).get(ev.id, {})
+    names = names if names is not None else {}
+    if ev.puja_id not in names:
+        names[ev.puja_id] = (await puja_title(db, ev.puja_id, "en"), await temple_name(db, ev.puja.temple_id, "en"))
+    title, temple = names[ev.puja_id]
+    paid = sum(v for k, v in counts.items() if k not in UNPAID)
+    paying = counts.get(S.pending_payment, 0)
+    open_time = ev.status == EventStatus.scheduled and ev.locked_at is None
+    return {"id": ev.id, "puja_id": ev.puja_id, "puja_kind": ev.puja.kind.value, "title": title, "temple": temple,
+            "starts_at": ev.starts_at.isoformat(), "booking_cutoff_at": ev.booking_cutoff_at.isoformat(),
+            "cutoff_hours": round((ev.starts_at - ev.booking_cutoff_at).total_seconds() / 3600, 2),
+            "video_sla_hours": ev.video_sla_hours,
             "sla_due_at": sla.due_at(ev).isoformat(), "status": ev.status.value, "booking_count": paid,
+            "payments_in_progress": paying,
+            # What the admin may change here (the API enforces the same rules).
+            "can_edit_time": open_time and paid == 0 and paying == 0,
+            "can_edit_cutoff": open_time,
+            "can_edit_sla": ev.status in (EventStatus.scheduled, EventStatus.started),
+            "can_delete": ev.status in (EventStatus.scheduled, EventStatus.cancelled) and paid == 0 and paying == 0,
             "locked": ev.locked_at is not None, "sankalp_sheet_url": public_url(ev.sankalp_sheet_key),
             "sankalp_video": bool(ev.sankalp_video_key), "full_video": playback(ev.full_video_stream_id),
             "photos": [{"url": public_url(p.get("key")), **p} for p in (ev.photos or [])],
             "rescheduled_to_event_id": ev.rescheduled_to_event_id}
 
 
+async def _rows(db: AsyncSession, evs: list[PujaEvent]) -> list[dict]:
+    counts = await _status_counts(db, [e.id for e in evs])
+    names: dict = {}
+    return [await _event_row(db, e, counts.get(e.id, {}), names) for e in evs]
+
+
+def _ist(dt: datetime) -> datetime:
+    return dt if dt.tzinfo else dt.replace(tzinfo=IST)
+
+
 # ------------------------------------------------------------------ events
 @router.get("/events")
-async def list_events(puja_id: int | None = None, upcoming: bool = True, db: AsyncSession = Depends(get_db),
+async def list_events(puja_id: int | None = None, status: EventStatus | None = None,
+                      when: Literal["upcoming", "past", "all"] = "upcoming", db: AsyncSession = Depends(get_db),
                       _: StaffUser = Depends(events_role)):
-    stmt = select(PujaEvent).order_by(PujaEvent.starts_at)
+    stmt = select(PujaEvent)
     if puja_id:
         stmt = stmt.where(PujaEvent.puja_id == puja_id)
-    if upcoming:
-        stmt = stmt.where(PujaEvent.starts_at > utcnow() - timedelta(days=2))
-    return [await _event_row(db, e) for e in (await db.execute(stmt.limit(300))).scalars()]
+    if status:
+        stmt = stmt.where(PujaEvent.status == status)
+    if when == "upcoming":
+        stmt = stmt.where(PujaEvent.starts_at > utcnow() - timedelta(days=2)).order_by(PujaEvent.starts_at)
+    elif when == "past":
+        stmt = stmt.where(PujaEvent.starts_at <= utcnow()).order_by(PujaEvent.starts_at.desc())
+    else:
+        stmt = stmt.order_by(PujaEvent.starts_at.desc())
+    return await _rows(db, list((await db.execute(stmt.limit(300))).scalars()))
 
 
 class EventIn(BaseModel):
@@ -86,8 +131,12 @@ async def create_event(body: EventIn, db: AsyncSession = Depends(get_db), staff:
     puja = await db.get(Puja, body.puja_id)
     if puja is None:
         raise HTTPException(404, "not_found")
-    starts = body.starts_at if body.starts_at.tzinfo else body.starts_at.replace(tzinfo=IST)
+    starts = _ist(body.starts_at)
+    if starts <= utcnow():
+        raise HTTPException(400, "starts_in_past")
     cutoff_h = body.cutoff_hours or await site_config.get(db, "booking_cutoff_hours_default")
+    if starts - timedelta(hours=cutoff_h) <= utcnow():
+        raise HTTPException(400, "cutoff_in_past")
     sla_h = body.video_sla_hours or puja.video_sla_hours or await site_config.get(db, "video_sla_hours_default")
     ev = PujaEvent(puja_id=puja.id, starts_at=starts, booking_cutoff_at=starts - timedelta(hours=cutoff_h),
                    video_sla_hours=sla_h)
@@ -130,6 +179,84 @@ async def get_event(event_id: int, db: AsyncSession = Depends(get_db), _: StaffU
     return await _event_row(db, ev)
 
 
+class EventPatch(BaseModel):
+    starts_at: datetime | None = None  # naive = IST
+    cutoff_hours: float | None = Field(default=None, gt=0, le=240)
+    video_sla_hours: int | None = Field(default=None, ge=1, le=720)
+
+
+@router.patch("/events/{event_id}")
+async def update_event(event_id: int, body: EventPatch, db: AsyncSession = Depends(get_db),
+                       staff: StaffUser = Depends(events_role)):
+    """Date and cutoff are free to change until someone pays; after that a date change must go through
+    Reschedule (it notifies devotees and lets them refund). The cutoff can move until the sheet is locked."""
+    ev = await db.get(PujaEvent, event_id)
+    if ev is None:
+        raise HTTPException(404, "not_found")
+    row = await _event_row(db, ev)
+    before = {"starts_at": row["starts_at"], "booking_cutoff_at": row["booking_cutoff_at"],
+              "video_sla_hours": ev.video_sla_hours}
+    new_start = _ist(body.starts_at) if body.starts_at else ev.starts_at
+    moves = new_start != ev.starts_at
+    if moves and not row["can_edit_time"]:
+        if row["booking_count"] or row["payments_in_progress"]:
+            raise HTTPException(409, "has_bookings_use_reschedule")
+        raise HTTPException(409, "event_locked")
+    if moves or body.cutoff_hours is not None:
+        if not row["can_edit_cutoff"]:
+            raise HTTPException(409, "event_locked")
+        if new_start <= utcnow():
+            raise HTTPException(400, "starts_in_past")
+        offset = timedelta(hours=body.cutoff_hours) if body.cutoff_hours is not None else ev.starts_at - ev.booking_cutoff_at
+        if new_start - offset <= utcnow():
+            raise HTTPException(400, "cutoff_in_past")
+        ev.starts_at, ev.booking_cutoff_at = new_start, new_start - offset
+    if body.video_sla_hours is not None and body.video_sla_hours != ev.video_sla_hours:
+        if not row["can_edit_sla"]:
+            raise HTTPException(409, "event_closed")
+        ev.video_sla_hours = body.video_sla_hours
+    await audit(db, staff.id, "event.update", "puja_event", ev.id,
+                {"before": before, "after": body.model_dump(mode="json", exclude_none=True)})
+    await db.commit()
+    await revalidate([*puja_tags(ev.puja_id), f"event:{ev.id}"])
+    return await _event_row(db, await db.get(PujaEvent, ev.id))
+
+
+@router.delete("/events/{event_id}")
+async def delete_event(event_id: int, db: AsyncSession = Depends(get_db), staff: StaffUser = Depends(events_role)):
+    """Deletes an event nobody has paid for. If it has any history (abandoned drafts, refunds, media),
+    it is cancelled instead so that history stays intact; either way it leaves the storefront."""
+    ev = await db.get(PujaEvent, event_id)
+    if ev is None:
+        raise HTTPException(404, "not_found")
+    row = await _event_row(db, ev)
+    if row["booking_count"]:
+        raise HTTPException(409, {"code": "has_bookings", "count": row["booking_count"]})
+    if row["payments_in_progress"]:
+        raise HTTPException(409, "payment_in_progress")
+    if not row["can_delete"]:
+        raise HTTPException(409, "event_closed")
+    referenced = await db.scalar(select(func.count()).select_from(Booking).where(
+        or_(Booking.puja_event_id == ev.id, Booking.reschedule_from_event_id == ev.id)))
+    referenced = referenced or await db.scalar(select(func.count()).select_from(PujaEvent).where(
+        PujaEvent.rescheduled_to_event_id == ev.id))
+    referenced = referenced or await db.scalar(select(func.count()).select_from(ProofClip).where(
+        ProofClip.puja_event_id == ev.id))
+    puja_id = ev.puja_id
+    if referenced or ev.photos or ev.sankalp_video_key or ev.full_video_stream_id:
+        ev.status = EventStatus.cancelled
+        result = "cancelled"
+    else:
+        await db.execute(update(MediaAsset).where(MediaAsset.puja_event_id == ev.id).values(puja_event_id=None))
+        await db.delete(ev)
+        result = "deleted"
+    await audit(db, staff.id, f"event.{'delete' if result == 'deleted' else 'cancel'}", "puja_event", event_id,
+                {"starts_at": row["starts_at"]})
+    await db.commit()
+    await revalidate([*puja_tags(puja_id), f"event:{event_id}"])
+    return {"result": result}
+
+
 @router.get("/today")
 async def today(day: date | None = None, db: AsyncSession = Depends(get_db), _: StaffUser = Depends(ops)):
     d = day or utcnow().astimezone(IST).date()
@@ -143,8 +270,8 @@ async def today(day: date | None = None, db: AsyncSession = Depends(get_db), _: 
         .where(PujaEvent.starts_at < lo, PujaEvent.starts_at > lo - timedelta(days=10),
                Booking.status.in_([S.locked, S.performed])).distinct()
     )).scalars().all()
-    return {"date": d.isoformat(), "events": [await _event_row(db, e) for e in rows],
-            "carry_over": [await _event_row(db, e) for e in pending if e not in rows]}
+    return {"date": d.isoformat(), "events": await _rows(db, list(rows)),
+            "carry_over": await _rows(db, [e for e in pending if e not in rows])}
 
 
 @router.get("/events/{event_id}/sheet")
