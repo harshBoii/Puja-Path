@@ -3,6 +3,7 @@ import uuid
 from fastapi import Cookie, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config import settings
 from db import get_db
 from models import StaffRole, StaffUser, User
 from security import DEVOTEE_COOKIE, STAFF_COOKIE, read_token
@@ -33,7 +34,7 @@ async def current_staff(
     db: AsyncSession = Depends(get_db), pp_staff: str | None = Cookie(default=None, alias=STAFF_COOKIE)
 ) -> StaffUser:
     data = read_token(pp_staff or "", "staff")
-    if not data or not data.get("mfa"):
+    if not data or (settings.staff_2fa and not data.get("mfa")):
         raise HTTPException(401, "staff_login_required")
     staff = await db.get(StaffUser, int(data["sub"]))
     if staff is None or not staff.active:

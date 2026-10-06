@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"  # only used when jobs_mode == "worker"
     # Background jobs: "inline" (inside the API, no Redis), "worker" (Arq + Redis), "manual" (tests only).
     jobs_mode: Literal["inline", "worker", "manual"] = "inline"
+    staff_2fa: bool = False  # authenticator code after the password for admin sign-in (off: password only)
     cron_secret: str = ""  # enables POST /v1/internal/cron for external schedulers (serverless hosts)
     jwt_secret: str = "change-me"
     revalidate_secret: str = "change-me"

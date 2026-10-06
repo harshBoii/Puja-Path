@@ -1,10 +1,11 @@
 """Staff sign-in: email + password + TOTP; 12-hour sessions; first login enrols the authenticator (PRD §10)."""
 
+import re
 from datetime import timedelta
 
 import pyotp
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -36,6 +37,8 @@ async def login(body: LoginIn, response: Response, db: AsyncSession = Depends(ge
              ).scalar_one_or_none()
     if staff is None or not staff.active or not check_password(body.password, staff.password_hash):
         raise HTTPException(401, "invalid_credentials")
+    if not settings.staff_2fa:
+        return await _start_session(db, response, staff, mfa=False)
     token = make_token(str(staff.id), "staff_pending", timedelta(minutes=10))
     _cookie(response, PENDING_COOKIE, token, 600)
     if not staff.totp_confirmed:
@@ -48,7 +51,13 @@ async def login(body: LoginIn, response: Response, db: AsyncSession = Depends(ge
 
 
 class TotpIn(BaseModel):
-    code: str = Field(pattern=r"^\d{6}$")
+    code: str = Field(max_length=20)
+
+    @field_validator("code")
+    @classmethod
+    def digits_only(cls, v: str) -> str:
+        # Authenticator apps show "123 456"; copy/paste and autofill often keep the space.
+        return re.sub(r"\D", "", v)
 
 
 @router.post("/totp")
@@ -58,15 +67,20 @@ async def verify_totp(body: TotpIn, response: Response, db: AsyncSession = Depen
     if not data:
         raise HTTPException(401, "login_expired")
     staff = await db.get(StaffUser, int(data["sub"]))
-    if staff is None or not staff.totp_secret or not pyotp.TOTP(staff.totp_secret).verify(body.code, valid_window=1):
+    if (staff is None or not staff.totp_secret or len(body.code) != 6
+            or not pyotp.TOTP(staff.totp_secret).verify(body.code, valid_window=1)):
         raise HTTPException(401, "invalid_code")
     staff.totp_confirmed = True
-    await audit(db, staff.id, "staff.login", "staff_user", staff.id)
+    return await _start_session(db, response, staff, mfa=True)
+
+
+async def _start_session(db: AsyncSession, response: Response, staff: StaffUser, *, mfa: bool) -> dict:
+    await audit(db, staff.id, "staff.login", "staff_user", staff.id, {"two_factor": mfa})
     await db.commit()
-    token = make_token(str(staff.id), "staff", timedelta(hours=STAFF_SESSION_HOURS), mfa=True, role=staff.role.value)
+    token = make_token(str(staff.id), "staff", timedelta(hours=STAFF_SESSION_HOURS), mfa=mfa, role=staff.role.value)
     _cookie(response, STAFF_COOKIE, token, STAFF_SESSION_HOURS * 3600)
     response.delete_cookie(PENDING_COOKIE, path="/")
-    return {"staff": staff_dict(staff)}
+    return {"step": "done", "staff": staff_dict(staff)}
 
 
 @router.post("/logout")
@@ -82,7 +96,7 @@ async def me(staff: StaffUser = Depends(current_staff)):
 
 def staff_dict(s: StaffUser) -> dict:
     return {"id": s.id, "email": s.email, "name": s.name, "role": s.role.value, "active": s.active,
-            "totp_enrolled": s.totp_confirmed}
+            "totp_enrolled": s.totp_confirmed, "two_factor": settings.staff_2fa}
 
 
 class StaffIn(BaseModel):

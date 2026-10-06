@@ -75,9 +75,9 @@ async def staff_client():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         r = await c.post("/v1/admin/auth/login", json={"email": "admin@test.local", "password": "test-admin-password"})
         assert r.status_code == 200, r.text
-        secret = r.json()["secret"]
-        r = await c.post("/v1/admin/auth/totp", json={"code": pyotp.TOTP(secret).now()})
-        assert r.status_code == 200, r.text
+        if r.json()["step"] != "done":  # STAFF_2FA on
+            r = await c.post("/v1/admin/auth/totp", json={"code": pyotp.TOTP(r.json()["secret"]).now()})
+            assert r.status_code == 200, r.text
         yield c
 
 

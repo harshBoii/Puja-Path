@@ -109,10 +109,23 @@ async def test_listing_filters_sort_search_and_pagination(client):
     assert usd["currency"] == "USD" and usd["packages"][0]["price_minor"] == 1500
 
 
-async def test_staff_login_requires_totp_and_roles_are_enforced():
+async def test_staff_login_is_password_only_by_default():
+    from main import app
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+        r = await c.post("/v1/admin/auth/login", json={"email": "admin@test.local", "password": "wrong-password"})
+        assert r.status_code == 401
+        r = await c.post("/v1/admin/auth/login", json={"email": "admin@test.local", "password": "test-admin-password"})
+        assert r.json()["step"] == "done"
+        assert (await c.get("/v1/admin/today")).status_code == 200
+
+
+async def test_staff_login_requires_totp_when_enabled_and_roles_are_enforced(monkeypatch):
+    from config import settings
     from main import app
     from models import StaffRole, StaffUser
 
+    monkeypatch.setattr(settings, "staff_2fa", True)
     async with SessionLocal() as db:
         db.add(StaffUser(email="ops@test.local", name="Ops", role=StaffRole.ops_coordinator,
                          password_hash=hash_password("ops-password-123"), active=True))
@@ -122,7 +135,10 @@ async def test_staff_login_requires_totp_and_roles_are_enforced():
         assert r.json()["step"] == "enroll_totp"
         assert (await c.get("/v1/admin/today")).status_code == 401  # password alone is not a session
         assert (await c.post("/v1/admin/auth/totp", json={"code": "000000"})).status_code == 401
-        await c.post("/v1/admin/auth/totp", json={"code": pyotp.TOTP(r.json()["secret"]).now()})
+        assert (await c.post("/v1/admin/auth/totp", json={"code": "12345"})).status_code == 401
+        code = pyotp.TOTP(r.json()["secret"]).now()
+        # Pasted from an authenticator app, with its display space.
+        assert (await c.post("/v1/admin/auth/totp", json={"code": f" {code[:3]} {code[3:]} "})).status_code == 200
         assert (await c.get("/v1/admin/today")).status_code == 200
         assert (await c.get("/v1/admin/finance/payments")).status_code == 403
         assert (await c.get("/v1/admin/config")).status_code == 403
