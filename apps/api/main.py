@@ -4,10 +4,13 @@ import hmac
 from contextlib import asynccontextmanager
 
 import sentry_sdk
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Response
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import settings
+from db import get_db
 from logging_setup import setup_logging
 from routers import (
     account,
@@ -64,6 +67,15 @@ app.mount("/media", StaticFiles(directory=settings.local_media_dir), name="media
 @app.get("/healthz")
 async def healthz():
     return {"ok": True, "jobs_mode": settings.jobs_mode}
+
+
+@app.get("/v1/wake", include_in_schema=False)
+async def wake(response: Response, db: AsyncSession = Depends(get_db)):
+    """Pinged by the website when a visitor arrives, so a sleeping API host (Render free tier) and database
+    (Neon autosuspend) are awake by the time they browse or book."""
+    await db.execute(text("select 1"))
+    response.headers["Cache-Control"] = "no-store"
+    return {"ok": True}
 
 
 @app.post("/v1/internal/cron", include_in_schema=False)

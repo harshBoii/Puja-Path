@@ -11,6 +11,7 @@ import Header from "@/components/Header";
 import { CURRENCY_SCRIPT } from "@/components/Price";
 import { NavOverlay } from "@/components/NavPending";
 import Providers from "@/components/Providers";
+import WakeApi from "@/components/WakeApi";
 import SwRegister from "@/components/SwRegister";
 import { LOCALES, isLocale } from "@/i18n/config";
 import { getConfig } from "@/lib/api";
@@ -64,6 +65,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
               account: t("nav.account"), nav: t("nav.tabBar") }} />
           </Providers>
           <NavOverlay />
+          <WakeApi />
           <SwRegister />
         </NextIntlClientProvider>
       </body>
