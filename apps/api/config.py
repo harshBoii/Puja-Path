@@ -63,8 +63,10 @@ class Settings(BaseSettings):
     shiprocket_pickup_pincode: str = ""
     shiprocket_webhook_token: str = ""
 
-    sms_otp_provider: str = "fake"
+    sms_otp_provider: str = "fake"  # fake | msg91 | telnyx
     sms_otp_api_key: str = ""
+    sms_otp_from: str = ""  # telnyx: sender number in E.164 (or an approved alphanumeric sender ID)
+    sms_otp_messaging_profile_id: str = ""  # telnyx: optional, when sending from a number pool
 
     ops_alert_email: str = ""
     smtp_url: str = ""

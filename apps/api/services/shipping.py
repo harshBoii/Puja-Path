@@ -68,12 +68,14 @@ async def apply_event(db: AsyncSession, ev: ShippingEvent) -> None:
     log(logger, "shipment status", booking_id=str(b.id), status=ev.status)
     title = await puja_title(db, b.event.puja_id, b.locale)
     tpl = _TEMPLATES.get(new)
+    # WhatsApp URL buttons are a fixed site URL + one suffix, so "Track" opens the booking page (which links
+    # to the courier's tracking), never the courier URL itself.
     if tpl == "prasad_shipped":
         await notify.queue(db, template_key=tpl, to=b.whatsapp_e164, locale=b.locale, booking=b,
-                           params=[title, sh.courier or "", sh.awb or ""], button_params=[sh.tracking_url or ""])
+                           params=[title, sh.courier or "", sh.awb or ""], button_params=[booking_svc.booking_path(b)])
     elif tpl == "prasad_out_for_delivery":
         await notify.queue(db, template_key=tpl, to=b.whatsapp_e164, locale=b.locale, booking=b,
-                           params=[sh.courier or "", sh.awb or ""], button_params=[sh.tracking_url or ""])
+                           params=[sh.courier or "", sh.awb or ""], button_params=[booking_svc.booking_path(b)])
     elif tpl == "prasad_delivered":
         await notify.queue(db, template_key=tpl, to=b.whatsapp_e164, locale=b.locale, booking=b, params=[title])
         await booking_svc.maybe_complete(db, b)

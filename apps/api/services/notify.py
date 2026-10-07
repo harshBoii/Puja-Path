@@ -97,7 +97,12 @@ async def due_message_ids(db: AsyncSession, limit: int = 200) -> list[str]:
 
 
 async def _template_ref(db: AsyncSession, key: str, locale: str, provider: str) -> TemplateRef:
-    row = await db.get(MessageTemplate, (key, locale, provider)) or await db.get(MessageTemplate, (key, "en", provider))
+    row = await db.get(MessageTemplate, (key, locale, provider))
+    if row is None or (row.status != "approved" and locale != "en"):
+        # Languages can go live one at a time: until this one's template is approved, send the English one.
+        en = await db.get(MessageTemplate, (key, "en", provider))
+        if en is not None and (row is None or en.status == "approved"):
+            row = en
     variables = TEMPLATE_SPECS[key]["variables"]
     if row is None:
         return TemplateRef(key, locale, f"pp_{key}_{locale}", variables)

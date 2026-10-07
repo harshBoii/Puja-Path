@@ -287,3 +287,62 @@ async def test_end_to_end_through_real_adapter(name, client, monkeypatch):
     assert m.status == MessageStatus.delivered
     r = await client.post(f"/v1/webhooks/messaging/{name}?token=bad", json=status)
     assert r.status_code == 401
+
+
+async def test_unapproved_language_falls_back_to_english_template():
+    from models import MessageTemplate
+
+    async with SessionLocal() as db:
+        # Seeded rows for real providers start as "pending" until Sync templates marks them approved.
+        en = await db.get(MessageTemplate, ("booking_confirmed", "en", "wati"))
+        hi = await db.get(MessageTemplate, ("booking_confirmed", "hi", "wati"))
+        assert hi.status == "pending"
+        en.status = "approved"
+        await db.commit()
+        ref = await notify._template_ref(db, "booking_confirmed", "hi", "wati")
+        assert (ref.locale, ref.provider_ref) == ("en", "pp_booking_confirmed_en")
+
+        hi.status = "approved"
+        await db.commit()
+        ref = await notify._template_ref(db, "booking_confirmed", "hi", "wati")
+        assert (ref.locale, ref.provider_ref) == ("hi", "pp_booking_confirmed_hi")
+
+
+@respx.mock
+async def test_telnyx_sms_otp_sends_localized_code(monkeypatch):
+    from config import settings
+    from providers.sms import send_sms_otp
+
+    monkeypatch.setattr(settings, "sms_otp_provider", "telnyx")
+    monkeypatch.setattr(settings, "sms_otp_api_key", "KEY123")
+    monkeypatch.setattr(settings, "sms_otp_from", "+15550001111")
+    route = respx.post("https://api.telnyx.com/v2/messages").mock(return_value=httpx.Response(200, json={"data": {}}))
+    await send_sms_otp("+919876543210", "482913", "hi")
+    sent = json.loads(route.calls[0].request.content)
+    assert route.calls[0].request.headers["authorization"] == "Bearer KEY123"
+    assert sent["to"] == "+919876543210" and sent["from"] == "+15550001111"
+    assert "482913" in sent["text"] and "सत्यापन" in sent["text"]
+
+
+def test_templates_meet_meta_rules():
+    """Meta rejects bodies that start or end with a variable, and button labels over 25 characters."""
+    import re
+    import sys
+    from pathlib import Path
+
+    from services.messaging_templates import TEMPLATE_SPECS
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    from create_templates import payload
+
+    for key, spec in TEMPLATE_SPECS.items():
+        for locale, body in spec["body"].items():
+            if spec["category"] != "authentication":
+                assert not re.match(r"^\{\{\d+\}\}", body.strip()), (key, locale)
+                assert not re.search(r"\{\{\d+\}\}\W?$", body.strip()), (key, locale)
+            for fmt in ("named", "positional"):
+                p = payload(key, locale, "https://example.com", fmt, "handle")
+                assert p["name"] == f"pp_{key}_{locale}"
+                for c in p["components"]:
+                    for b in c.get("buttons", []):
+                        assert len(b.get("text", "")) <= 25, (key, locale, b)

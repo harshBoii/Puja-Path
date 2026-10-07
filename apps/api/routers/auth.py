@@ -52,7 +52,7 @@ async def request_otp(body: OtpRequest, db: AsyncSession = Depends(get_db)):
         await notify.commit_and_dispatch(db)
     else:
         await db.commit()
-        await send_sms_otp(body.phone_e164, code)
+        await send_sms_otp(body.phone_e164, code, locale)
     out = {"sent": True, "channel": body.channel, "sms_fallback_after_seconds": int(SMS_AFTER.total_seconds())}
     if settings.app_env == "test" or (settings.is_dev and settings.messaging_provider == "fake"):
         out["dev_code"] = code  # never in staging/production: lets local dev and tests log in
