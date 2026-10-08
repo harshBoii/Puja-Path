@@ -43,7 +43,8 @@ class WatiProvider:
         if header_media_url:
             parameters.append({"name": "media_url", "value": header_media_url})
         for i, value in enumerate(button_params or []):
-            parameters.append({"name": f"button_{i + 1}", "value": value})
+            # WATI names a dynamic URL button's variable by its position ({{1}} -> "1").
+            parameters.append({"name": str(i + 1), "value": value})
         body = {
             "template_name": template.provider_ref,
             # broadcast_name groups sends in WATI's dashboard; idempotency key keeps it unique per message.

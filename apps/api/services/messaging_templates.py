@@ -6,6 +6,7 @@ Copy is factual about the ritual; no promised outcomes. Bodies use WhatsApp's {{
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config import settings
 from models import MessageTemplate
 
 TEMPLATE_SPECS: dict[str, dict] = {
@@ -189,11 +190,18 @@ def render_body(key: str, locale: str, params: list[str]) -> str:
     return body
 
 
+def template_name(key: str, locale: str | None = None) -> str:
+    """The name templates are submitted and looked up under, e.g. pp_booking_confirmed_en."""
+    base = f"{settings.messaging_template_prefix}_{key}"
+    return f"{base}_{locale}" if locale else base
+
+
 async def seed_templates(db: AsyncSession) -> None:
     for key, spec in TEMPLATE_SPECS.items():
         for locale in LOCALES:
             for provider in PROVIDERS:
-                ref = f"pp_{key}_{locale}" if provider != "gupshup" else f"unsynced:pp_{key}_{locale}"
+                name = template_name(key, locale)
+                ref = name if provider != "gupshup" else f"unsynced:{name}"
                 stmt = insert(MessageTemplate).values(
                     key=key, locale=locale, category=spec["category"], provider=provider,
                     provider_template_ref=ref, variables=spec["variables"],
@@ -201,5 +209,7 @@ async def seed_templates(db: AsyncSession) -> None:
                 )
                 await db.execute(stmt.on_conflict_do_update(
                     index_elements=["key", "locale", "provider"],
-                    set_={"body": spec["body"][locale], "variables": spec["variables"], "category": spec["category"]},
+                    set_={"body": spec["body"][locale], "variables": spec["variables"], "category": spec["category"],
+                          # names follow the prefix; Gupshup's refs are template IDs from sync, so leave those
+                          **({"provider_template_ref": ref} if provider != "gupshup" else {})},
                 ))

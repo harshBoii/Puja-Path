@@ -34,7 +34,7 @@ from services import notify, site_config
 from services.audit import audit
 from services.catalog import puja_title
 from services.i18n import LOCALES, utcnow
-from services.messaging_templates import TEMPLATE_SPECS, render_body
+from services.messaging_templates import TEMPLATE_SPECS, render_body, template_name
 from services.revalidate import revalidate
 
 router = APIRouter(prefix="/v1/admin", tags=["admin"])
@@ -54,13 +54,13 @@ async def templates(db: AsyncSession = Depends(get_db), _: StaffUser = Depends(r
 
 @router.post("/templates/sync")
 async def sync_templates(db: AsyncSession = Depends(get_db), staff: StaffUser = Depends(admin_only)):
-    """Pulls approval status (and Gupshup template IDs) from the provider, matched by name pp_{key}_{locale}."""
+    """Pulls approval status (and Gupshup template IDs) from the provider, matched by name {prefix}_{key}_{locale}."""
     provider = get_messaging_provider()
     remote = await provider.list_templates()
     by_name = {t.name: t for t in remote}
     updated = 0
     for t in (await db.execute(select(MessageTemplate).where(MessageTemplate.provider == provider.name))).scalars():
-        r = by_name.get(f"pp_{t.key}_{t.locale}") or by_name.get(f"pp_{t.key}")
+        r = by_name.get(template_name(t.key, t.locale)) or by_name.get(template_name(t.key))
         if r is None:
             continue
         t.status = r.status

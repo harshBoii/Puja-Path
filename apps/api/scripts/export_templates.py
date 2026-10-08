@@ -3,7 +3,7 @@
     python scripts/export_templates.py --site https://pujapath.in
 
 Writes docs/whatsapp-templates.csv (one row per template per language: 18 x 4 = 72) and
-docs/whatsapp-templates.md (the same, readable). Names follow the app's lookup: pp_{key}_{locale}.
+docs/whatsapp-templates.md (the same, readable). Names follow the app's lookup: {MESSAGING_TEMPLATE_PREFIX}_{key}_{locale}.
 Rerun after editing services/messaging_templates.py so the sheet never drifts from what the app sends.
 """
 
@@ -14,7 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from services.messaging_templates import LOCALES, TEMPLATE_SPECS
+from services.messaging_templates import LOCALES, TEMPLATE_SPECS, template_name
 
 ROOT = Path(__file__).resolve().parents[3]
 META_LANG = {"en": "en", "hi": "hi", "ta": "ta", "te": "te"}  # Meta language codes: English, Hindi, Tamil, Telugu
@@ -80,7 +80,7 @@ def rows(site: str) -> list[dict]:
         for loc in LOCALES:
             btype, btext, burl, bsample = buttons(spec, loc, site)
             out.append({
-                "name": f"pp_{key}_{loc}", "category": spec["category"].upper(), "language": META_LANG[loc],
+                "name": template_name(key, loc), "category": spec["category"].upper(), "language": META_LANG[loc],
                 "header": "VIDEO (sample: any short .mp4 under 16 MB)" if spec.get("header") == "video" else "",
                 "body": spec["body"][loc],
                 # WATI: the app sends values by name, so placeholders must be {{name}}, {{puja}}, ...

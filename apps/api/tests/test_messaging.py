@@ -182,6 +182,7 @@ async def test_adapter_send_template(name):
         body = json.loads(req.content)
         assert body["template_name"] == "ref-1"
         assert {"name": "name", "value": "Ravi"} in body["parameters"]
+        assert {"name": "1", "value": "te/proof/x"} in body["parameters"]  # dynamic URL button variable
     else:
         assert req.headers["apikey"] == "key"
         form = dict(x.split("=", 1) for x in req.content.decode().split("&"))

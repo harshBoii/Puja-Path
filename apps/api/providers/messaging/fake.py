@@ -50,7 +50,7 @@ class FakeMessagingProvider:
         ]
 
     async def list_templates(self):
-        from services.messaging_templates import TEMPLATE_SPECS
+        from services.messaging_templates import TEMPLATE_SPECS, template_name
 
-        return [ProviderTemplate(provider_ref=f"pp_{k}", name=f"pp_{k}", locale=None, status="approved",
+        return [ProviderTemplate(provider_ref=template_name(k), name=template_name(k), locale=None, status="approved",
                                  category=v["category"]) for k, v in TEMPLATE_SPECS.items()]

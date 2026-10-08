@@ -45,8 +45,22 @@ relies on, only come from templates created there.
 
 ## 4. Create the templates
 
-18 message types × 4 languages = 72. You don't type them: a script submits them to Meta from the app's own
-definitions, and they then appear in WATI/Gupshup too.
+18 message types × 4 languages = 72. You don't type them: a script submits them from the app's own definitions.
+
+**WATI:** the script submits through WATI's API. WATI cannot import templates created directly on Meta, so don't
+use the Meta route with WATI. It reads `WATI_API_ENDPOINT` and `WATI_ACCESS_TOKEN` from `apps/api/.env`:
+
+```
+cd apps/api
+.venv/bin/python scripts/create_templates.py --site https://YOUR-DOMAIN --essential --locales en \
+  --video-url https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4
+```
+
+`--video-url` is any public .mp4, used only as Meta's review sample for the video header. Template names are
+`{MESSAGING_TEMPLATE_PREFIX}_{key}_{locale}`. Meta never frees a name, so if templates were already created under
+one prefix elsewhere, pick a new prefix and set it on the API service too.
+
+**Gupshup** (Meta route):
 
 1. In **Meta Business Manager → Users → System users**, create a system user (admin), add your WhatsApp Business
    Account and an app as assets, and generate a token with the `whatsapp_business_management` permission.

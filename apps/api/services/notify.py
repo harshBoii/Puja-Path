@@ -21,7 +21,7 @@ from providers.messaging import get_messaging_provider
 from providers.messaging.base import INVALID_NUMBER_CODES, MessagingEvent, TemplateRef
 from services import site_config
 from services.i18n import in_quiet_hours, tz_for_phone, utcnow
-from services.messaging_templates import OPT_IN_REQUIRED, TEMPLATE_SPECS
+from services.messaging_templates import OPT_IN_REQUIRED, TEMPLATE_SPECS, template_name
 
 logger = logging.getLogger("notify")
 MAX_ATTEMPTS = 4  # first try + 3 retries
@@ -112,7 +112,7 @@ async def _template_ref(db: AsyncSession, key: str, locale: str, provider: str) 
             row = en
     variables = TEMPLATE_SPECS[key]["variables"]
     if row is None:
-        return TemplateRef(key, locale, f"pp_{key}_{locale}", variables)
+        return TemplateRef(key, locale, template_name(key, locale), variables)
     return TemplateRef(key, row.locale, row.provider_template_ref, variables)
 
 

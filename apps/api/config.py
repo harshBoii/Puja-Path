@@ -47,6 +47,8 @@ class Settings(BaseSettings):
     wati_webhook_token: str = ""
     # Comma list of message types to send, e.g. "otp_login,booking_confirmed". Others are skipped silently. Empty = all.
     messaging_templates: str = ""
+    # Templates are named {prefix}_{key}_{locale}. Change it to resubmit under new names (Meta keeps old names).
+    messaging_template_prefix: str = "pp"
 
     payment_provider: str = "fake"
     razorpay_key_id: str = ""
