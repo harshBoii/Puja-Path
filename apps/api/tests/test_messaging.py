@@ -167,7 +167,8 @@ async def test_adapter_send_template(name):
     p = ADAPTERS[name]()
     if name == "wati":
         route = respx.post("https://live-server.wati.io/123/api/v2/sendTemplateMessage").mock(
-            return_value=httpx.Response(200, json={"result": True, "localMessageId": "wati-1"}))
+            return_value=httpx.Response(200, json={"result": True, "receivers": [
+                {"localMessageId": "wati-1", "waId": "919876543210", "isValidWhatsAppNumber": True, "errors": []}]}))
     else:
         route = respx.post("https://api.gupshup.io/wa/api/v1/template/msg").mock(
             return_value=httpx.Response(202, json={"status": "submitted", "messageId": "gs-1"}))

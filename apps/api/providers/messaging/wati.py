@@ -58,7 +58,11 @@ class WatiProvider:
         data = resp.json()
         if not data.get("result", False):
             return SendResult(None, False, error=str(data.get("info") or data.get("error") or "rejected"))
-        return SendResult(provider_message_id=data.get("localMessageId") or data.get("id"), accepted=True)
+        # The id WATI's status webhooks carry (localMessageId) comes back per receiver. Its isValidWhatsAppNumber
+        # is unreliable (false for numbers that then receive the message), so failures come from the webhook.
+        receiver = (data.get("receivers") or [{}])[0]
+        return SendResult(provider_message_id=receiver.get("localMessageId") or data.get("localMessageId"),
+                          accepted=True)
 
     async def send_session_text(self, to, text):
         resp = await request(
