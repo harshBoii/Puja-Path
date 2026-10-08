@@ -83,6 +83,8 @@ async def test_send(body: TestSendIn, db: AsyncSession = Depends(get_db),
     spec = TEMPLATE_SPECS.get(body.template_key)
     if spec is None or body.locale not in LOCALES:
         raise HTTPException(400, "bad_template")
+    if not notify.enabled(body.template_key):
+        raise HTTPException(400, "template_disabled")
     params = [f"[{v}]" for v in spec["variables"]]
     await notify.queue(db, template_key=body.template_key, to=body.to_e164, locale=body.locale, params=params,
                        occurrence_key=f"test:{utcnow().timestamp()}")

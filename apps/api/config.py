@@ -45,6 +45,8 @@ class Settings(BaseSettings):
     wati_api_endpoint: str = ""
     wati_access_token: str = ""
     wati_webhook_token: str = ""
+    # Comma list of message types to send, e.g. "otp_login,booking_confirmed". Others are skipped silently. Empty = all.
+    messaging_templates: str = ""
 
     payment_provider: str = "fake"
     razorpay_key_id: str = ""

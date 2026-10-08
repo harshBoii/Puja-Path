@@ -14,6 +14,7 @@ for k in ("R2_ACCOUNT_ID", "R2_BUCKET", "R2_PUBLIC_BASE_URL", "CF_STREAM_ACCOUNT
     os.environ[k] = ""
 for k in ("MESSAGING_PROVIDER", "PAYMENT_PROVIDER", "SHIPPING_PROVIDER", "SMS_OTP_PROVIDER"):
     os.environ[k] = "fake"
+os.environ["MESSAGING_TEMPLATES"] = ""  # tests exercise all 18 message types
 os.environ["WEB_INTERNAL_URL"] = "http://127.0.0.1:9"  # revalidation calls fail fast and are ignored
 os.environ["ADMIN_EMAIL"] = "admin@test.local"
 os.environ["ADMIN_PASSWORD"] = "test-admin-password"

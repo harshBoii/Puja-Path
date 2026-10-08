@@ -28,6 +28,11 @@ MAX_ATTEMPTS = 4  # first try + 3 retries
 PENDING_KEY = "pending_message_ids"
 
 
+def enabled(template_key: str) -> bool:
+    allowed = {k.strip() for k in settings.messaging_templates.split(",") if k.strip()}
+    return not allowed or template_key in allowed
+
+
 async def queue(
     db: AsyncSession,
     *,
@@ -44,6 +49,8 @@ async def queue(
 ) -> uuid.UUID | None:
     if template_key not in TEMPLATE_SPECS:
         raise ValueError(f"unknown template {template_key}")
+    if not enabled(template_key):
+        return None  # switched off in MESSAGING_TEMPLATES: no row, no send
     values = dict(
         id=uuid.uuid4(),
         booking_id=booking.id if booking else None,

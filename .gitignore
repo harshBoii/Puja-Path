@@ -14,3 +14,4 @@ apps/api/var/
 .dual-graph/
 .claude/settings.local.json
 .lighthouseci/
+apps/api/sample.mp4

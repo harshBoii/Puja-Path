@@ -346,3 +346,19 @@ def test_templates_meet_meta_rules():
                 for c in p["components"]:
                     for b in c.get("buttons", []):
                         assert len(b.get("text", "")) <= 25, (key, locale, b)
+
+
+async def test_switched_off_message_types_are_never_queued(client, monkeypatch):
+    from config import settings
+
+    monkeypatch.setattr(settings, "messaging_templates", "otp_login, booking_confirmed")
+    await _no_quiet_hours()
+    res = await book(client)
+    bid = uuid.UUID(res["draft_id"])
+    async with SessionLocal() as db:
+        b = await db.get(Booking, bid)
+        assert await notify.queue(db, template_key="puja_reminder", to=b.whatsapp_e164, locale="en",
+                                  booking=b, params=["x"], occurrence_key="t") is None
+        await db.commit()
+        keys = set((await db.execute(select(MessageLog.template_key).where(MessageLog.booking_id == bid))).scalars())
+    assert "puja_reminder" not in keys and "booking_confirmed" in keys
