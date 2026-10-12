@@ -47,7 +47,7 @@ export default async function PujaDetailView({ puja }: { puja: PujaDetail }) {
   const sections = [
     { id: "about", label: t("puja.sectionAbout") },
     { id: "benefits", label: t("puja.sectionBenefits") },
-    { id: "rituals", label: t("puja.sectionRituals") },
+    ...(puja.rituals?.length ? [{ id: "rituals", label: t("puja.sectionRituals") }] : []),
     { id: "temple", label: t("puja.sectionTemple") },
     { id: "receive", label: t("puja.sectionReceive") },
     { id: "reviews", label: t("puja.sectionReviews") },
@@ -180,10 +180,12 @@ export default async function PujaDetailView({ puja }: { puja: PujaDetail }) {
           </section>
 
           {/* 11. rituals */}
-          <section id="rituals" aria-labelledby="rituals-h" className="scroll-mt-32">
-            <SectionTitle id="rituals-h">{t("puja.sectionRituals")}</SectionTitle>
-            <RitualSteps items={puja.rituals} mainLabel={t("puja.mainRitual")} />
-          </section>
+          {puja.rituals?.length > 0 && (
+            <section id="rituals" aria-labelledby="rituals-h" className="scroll-mt-32">
+              <SectionTitle id="rituals-h">{t("puja.sectionRituals")}</SectionTitle>
+              <RitualSteps items={puja.rituals} mainLabel={t("puja.mainRitual")} />
+            </section>
+          )}
 
           {/* 12. temple */}
           <section id="temple" aria-labelledby="temple-h" className="scroll-mt-32">

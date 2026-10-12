@@ -211,6 +211,12 @@ async def _puja_admin(db: AsyncSession, p: Puja) -> dict:
     }
 
 
+@router.get("/price-rate")
+async def price_rate(db: AsyncSession = Depends(get_db), _: StaffUser = Depends(editor)):
+    """Rate the editor uses to pre-fill a missing INR/USD price (Site config → inr_per_usd)."""
+    return {"inr_per_usd": float(await site_config.get(db, "inr_per_usd"))}
+
+
 @router.get("/pujas")
 async def pujas(db: AsyncSession = Depends(get_db), _: StaffUser = Depends(require_role(
         StaffRole.catalog_editor, StaffRole.ops_coordinator, StaffRole.support_agent))):
@@ -251,6 +257,8 @@ async def update_puja(puja_id: int, body: PujaIn, db: AsyncSession = Depends(get
         if not img.get("key"):
             raise HTTPException(400, "image_key_required")
         img.pop("url", None)  # display-only, added by _puja_admin
+        if not img.get("width"):  # lets the storefront build a srcset of the variants that exist
+            img["width"] = (await db.execute(select(MediaAsset.width).where(MediaAsset.key == img["key"]))).scalar()
     for k, v in body.model_dump(exclude={"slug"}).items():
         setattr(p, k, v)
     if body.slug:

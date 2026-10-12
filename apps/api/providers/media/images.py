@@ -15,9 +15,8 @@ def process_image(src: Path, base_key: str) -> dict:
     img = img.convert("RGB")
     width, height = img.size
     out_dir = Path(tempfile.mkdtemp())
+    # Every width is written (never upscaled: a small photo's @1440 is just the original size), so srcset never 404s.
     for w in WIDTHS:
-        if w > width and w != WIDTHS[0]:
-            continue
         variant = img.copy()
         variant.thumbnail((w, int(w * height / width)))
         p = out_dir / f"{w}.webp"

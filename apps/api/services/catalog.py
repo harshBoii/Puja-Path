@@ -48,9 +48,12 @@ def image(img: dict | None, locale: str) -> dict | None:
     key = img.get("key")
     alt = (img.get("alt") or {}).get(locale) or (img.get("alt") or {}).get("en") or ""
     out = {"url": public_url(key), "alt": alt}
-    if key and key.endswith(".webp") and not key.startswith("seed/"):
+    # Only images saved with their width get a srcset, listing only variants that exist: older uploads skipped widths
+    # larger than the original, and a srcset pointing at a missing file shows a broken image.
+    if key and key.endswith(".webp") and not key.startswith("seed/") and img.get("width"):
         base = key[: -len(".webp")]
-        out["srcset"] = ", ".join(f"{public_url(f'{base}@{w}.webp')} {w}w" for w in (480, 960, 1440))
+        widths = [w for w in (480, 960, 1440) if w <= img["width"]] or [480]
+        out["srcset"] = ", ".join(f"{public_url(f'{base}@{w}.webp')} {w}w" for w in widths)
     if img.get("taken_on"):
         out["taken_on"] = img["taken_on"]
     return out

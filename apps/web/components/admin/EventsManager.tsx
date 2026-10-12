@@ -30,7 +30,7 @@ const REPEATS: [string, string][] = [
   ["FREQ=MONTHLY", "Every month (same date)"],
 ];
 
-export function EventsManager({ pujaId, initialPujaId }: { pujaId?: number; initialPujaId?: number | null }) {
+export function EventsManager({ pujaId, initialPujaId, onChange }: { pujaId?: number; initialPujaId?: number | null; onChange?: () => void }) {
   const [filterPuja, setFilterPuja] = useState<number | null>(initialPujaId ?? null);
   const [when, setWhen] = useState<"upcoming" | "past" | "all">("upcoming");
   const [status, setStatus] = useState("");
@@ -46,7 +46,7 @@ export function EventsManager({ pujaId, initialPujaId }: { pujaId?: number; init
     if (!window.confirm(`Delete the ${fmtDate(e.starts_at)} date of “${e.title}”? This can't be undone.`)) return;
     return run(async () => {
       const r = await api<{ result: string }>(`/admin/events/${e.id}`, { method: "DELETE" });
-      evs.reload();
+      evs.reload(); onChange?.();
       return r.result;
     }, (result) => result === "cancelled"
       ? "Date cancelled and hidden from the site (kept for records because it had unfinished checkouts or media)."
@@ -71,7 +71,7 @@ export function EventsManager({ pujaId, initialPujaId }: { pujaId?: number; init
           {adding ? "Close" : "+ Add dates"}</button>
       </div>
       {view}
-      {adding && <AddDates pujaId={puja} pujas={pujaId ? null : pujas.data} onDone={() => { evs.reload(); }} />}
+      {adding && <AddDates pujaId={puja} pujas={pujaId ? null : pujas.data} onDone={() => { evs.reload(); onChange?.(); }} />}
       {!evs.data ? <p className="text-ink-600">Loading dates…</p> : (
         <Table empty="No dates match these filters." head={["Starts (IST)", ...(pujaId ? [] : ["Puja"]), "Booking closes", "Video due", "Bookings", "Status", ""]}
           rows={evs.data.map((e) => [
@@ -90,7 +90,7 @@ export function EventsManager({ pujaId, initialPujaId }: { pujaId?: number; init
       )}
       {editing && (
         <Dialog title={`Edit date · ${editing.title}`} onClose={() => setEditing(null)}>
-          <EventEditForm ev={editing} onSaved={() => { setEditing(null); evs.reload(); }} onDeleted={() => { setEditing(null); evs.reload(); }} />
+          <EventEditForm ev={editing} onSaved={() => { setEditing(null); evs.reload(); onChange?.(); }} onDeleted={() => { setEditing(null); evs.reload(); onChange?.(); }} />
         </Dialog>
       )}
     </div>

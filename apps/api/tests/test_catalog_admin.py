@@ -155,3 +155,22 @@ async def test_every_admin_write_is_audited(staff_client):
 async def test_admin_paths_are_not_captured_by_locale_routes(staff_client):
     assert (await staff_client.get("/v1/admin/pujas/1")).status_code == 200
     assert (await staff_client.get("/v1/admin/temples")).status_code == 200
+
+
+async def test_rituals_are_optional_for_publishing(staff_client):
+    p = await _new_puja(staff_client)
+    await staff_client.put(f"/v1/admin/pujas/{p['id']}/translations/en", json=_tr(rituals=[]))
+    errs = (await staff_client.post(f"/v1/admin/pujas/{p['id']}/validate", json={"locales": ["en"]})).json()["errors"]
+    assert not [e for e in errs if e["field"].startswith("rituals")]
+
+
+async def test_price_rate_comes_from_site_config(staff_client):
+    assert (await staff_client.get("/v1/admin/price-rate")).json() == {"inr_per_usd": 85.0}
+
+
+def test_srcset_lists_only_variants_that_exist():
+    from services.catalog import image
+
+    assert "srcset" not in image({"key": "images/a.webp", "alt": {"en": "x"}}, "en")  # width unknown: plain src
+    srcset = image({"key": "images/a.webp", "alt": {"en": "x"}, "width": 1000}, "en")["srcset"]
+    assert "@960.webp" in srcset and "@1440" not in srcset

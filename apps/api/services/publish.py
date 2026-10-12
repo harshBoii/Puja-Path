@@ -73,8 +73,6 @@ async def validate_puja(db: AsyncSession, puja: Puja, locales: list[str]) -> lis
                 err(field, "required", loc)
         if not tr.benefits:
             err("benefits", "required", loc)
-        if not tr.rituals:
-            err("rituals", "required", loc)
         if sum(1 for r in tr.rituals or [] if r.get("main")) > 1:
             err("rituals", "more_than_one_main", loc)
         # template variables: the puja and temple names render into WhatsApp templates in this locale

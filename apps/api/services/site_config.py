@@ -27,6 +27,7 @@ DEFAULTS: dict[str, Any] = {
     "refund_expected_days": "5-7",
     "reschedule_reply_hours": 48,
     "shipping_fee": {"INR": 9900, "USD": 300},
+    "inr_per_usd": 85,  # catalog editor pre-fills the missing price with this rate; editors can override it
     "dakshina_options": {"INR": [5100, 10100, 25100], "USD": [300, 500, 1100]},
     "tax_rules": [],  # e.g. [{"label": "GST 18%", "rate_bps": 1800, "applies_to": "platform_fee"}]
     "consent_text_version": "2026-10-01",

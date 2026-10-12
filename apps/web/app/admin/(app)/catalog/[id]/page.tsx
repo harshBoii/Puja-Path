@@ -18,7 +18,7 @@ type Ritual = { title: string; text: string; main?: boolean };
 type Tr = { title: string; subtitle: string | null; occasion_chip: string | null; about_md: string | null;
   benefits: { title: string; line: string }[]; rituals: Ritual[]; faqs: { q: string; a: string }[];
   meta_title: string | null; meta_description: string | null; published?: boolean };
-type Img = { key: string; alt: Record<string, string>; url?: string | null };
+type Img = { key: string; alt: Record<string, string>; url?: string | null; width?: number | null };
 type Puja = {
   id: number; temple_id: number; kind: string; slug: string; status: string; deity_tags: string[]; dosha_tags: string[]; benefit_tags: string[];
   tradition: string; duration_minutes: number; priests_count: number; sankalp_language: string; requires_nakshatra: boolean;
@@ -58,6 +58,8 @@ const toggle = (a: string[], v: string, on: boolean) => (on ? [...new Set([...a,
 // ------------------------------------------------------------------ step savers
 type Saver = () => Promise<void>;
 const SaverCtx = createContext<(id: string, fn: Saver | null) => void>(() => {});
+/** Site config inr_per_usd; null while loading. */
+const RateCtx = createContext<number | null>(null);
 
 /** Registers what "Save & continue" must save for `step`. */
 function useSaver(step: Step, name: string, fn: Saver) {
@@ -88,6 +90,10 @@ function PujaEditor({ p, setP, reload }: { p: Puja; setP: (p: Puja) => void; rel
   const savers = useRef(new Map<string, Saver>());
   const register = useCallback((key: string, fn: Saver | null) => { if (fn) savers.current.set(key, fn); else savers.current.delete(key); }, []);
   const { run, busy, view } = useAction();
+  const rate = useApi<{ inr_per_usd: number }>("/admin/price-rate");
+  const events = useApi<{ status: string; booking_cutoff_at: string }[]>(`/admin/events?puja_id=${p.id}`);
+  const [now] = useState(() => Date.now());
+  const openDates = events.data?.filter((e) => e.status === "scheduled" && new Date(e.booking_cutoff_at).getTime() > now).length ?? null;
   const set = (patch: Partial<Puja>) => setP({ ...p, ...patch });
   const edit = (l: L, patch: Partial<Tr>) => {
     setDrafts((d) => ({ ...d, [l]: { ...d[l], ...patch } }));
@@ -99,7 +105,7 @@ function PujaEditor({ p, setP, reload }: { p: Puja; setP: (p: Puja) => void; rel
       temple_id: p.temple_id, kind: p.kind, slug: p.slug, deity_tags: p.deity_tags, dosha_tags: p.dosha_tags, benefit_tags: p.benefit_tags,
       tradition: p.tradition, duration_minutes: p.duration_minutes, priests_count: p.priests_count, sankalp_language: p.sankalp_language,
       requires_nakshatra: p.requires_nakshatra, video_sla_hours: p.video_sla_hours, deliverables: p.deliverables, prasad_box: p.prasad_box,
-      images: p.images.map(({ key, alt }) => ({ key, alt })) } }));
+      images: p.images.map(({ url: _url, ...img }) => { void _url; return img; }) } }));
     setPreviewKey((k) => k + 1);
   };
   const saveCopy = async () => {
@@ -125,7 +131,7 @@ function PujaEditor({ p, setP, reload }: { p: Puja; setP: (p: Puja) => void; rel
   const goTo = (s: Step) => {
     setStep(s);
     window.scrollTo({ top: 0, behavior: "smooth" });
-    if (s === "publish") validate();
+    if (s === "publish") { validate(); events.reload(); }
   };
   const idx = STEPS.findIndex((s) => s.id === step);
   const next = STEPS[idx + 1]?.id;
@@ -139,11 +145,12 @@ function PujaEditor({ p, setP, reload }: { p: Puja; setP: (p: Puja) => void; rel
     content: !!p.translations.en?.title,
     photos: p.images.length > 0,
     pricing: p.packages.some((k) => k.active && k.price_inr_minor > 0 && k.price_usd_minor > 0),
+    dates: !!openDates,
   };
   const hasSaver = step !== "dates" && step !== "publish";
 
   return (
-    <SaverCtx.Provider value={register}>
+    <SaverCtx.Provider value={register}><RateCtx.Provider value={rate.data?.inr_per_usd ?? null}>
       <PageTitle actions={<>
         <Badge tone={statusTone(p.status)}>{p.status}</Badge>
         <Badge tone="grey">{KIND[p.kind] ?? p.kind}</Badge>
@@ -157,7 +164,10 @@ function PujaEditor({ p, setP, reload }: { p: Puja; setP: (p: Puja) => void; rel
                 className={cx("flex min-h-11 items-center gap-2 rounded-chip border px-3 py-1.5 text-small",
                   step === s.id ? "border-gold-600 bg-gold-100 font-semibold text-ink-900" : "border-marble-200 bg-surface text-ink-600")}>
                 <span className={cx("flex h-6 w-6 items-center justify-center rounded-full border text-[0.75rem]",
-                  done[s.id] ? "border-tulsi-600 bg-tulsi-600 text-white" : "border-gold-600 text-gold-700")}>{done[s.id] ? "✓" : i + 1}</span>
+                  done[s.id] ? "border-tulsi-600 bg-tulsi-600 text-white" : s.id === "dates" && openDates === 0
+                    ? "border-sindoor-600 bg-sindoor-600 text-white" : "border-gold-600 text-gold-700")}
+                  title={s.id === "dates" && openDates === 0 ? "No dates open for booking" : undefined}>
+                  {done[s.id] ? "✓" : s.id === "dates" && openDates === 0 ? "!" : i + 1}</span>
                 {s.label}{"optional" in s && <span className="text-ink-600">(optional)</span>}
               </button>
             </li>
@@ -178,7 +188,8 @@ function PujaEditor({ p, setP, reload }: { p: Puja; setP: (p: Puja) => void; rel
       <div hidden={step !== "dates"}>
         <Card title="Dates" actions={<Link href={`/admin/events?puja_id=${p.id}`} className="pp-link">All events</Link>}>
           <p className="mb-3 text-small text-ink-600">Add the dates this puja will be performed. Devotees can only book a date listed here.</p>
-          <EventsManager pujaId={p.id} />
+          {openDates === 0 && <NoDatesWarning />}
+          <EventsManager pujaId={p.id} onChange={events.reload} />
         </Card>
       </div>
       <div hidden={step !== "advanced"}>
@@ -187,7 +198,7 @@ function PujaEditor({ p, setP, reload }: { p: Puja; setP: (p: Puja) => void; rel
         <DangerZone puja={p} onChanged={reload} />
       </div>
       <div hidden={step !== "publish"}>
-        <PublishStep p={p} errors={errors} busy={busy} unsaved={dirty.length > 0} onCheck={validate} goTo={goTo} onChanged={() => { reload(); validate(); }} />
+        <PublishStep p={p} errors={errors} busy={busy} unsaved={dirty.length > 0} openDates={openDates} onCheck={validate} goTo={goTo} onChanged={() => { reload(); validate(); }} />
       </div>
 
       <div className="sticky bottom-0 z-10 -mx-4 mt-2 border-t border-marble-200 bg-surface/95 px-4 py-3 backdrop-blur md:-mx-6 md:px-6">
@@ -202,7 +213,7 @@ function PujaEditor({ p, setP, reload }: { p: Puja; setP: (p: Puja) => void; rel
             : <button type="button" className="pp-btn pp-btn-primary" disabled={busy} onClick={() => goTo(next)}>Continue →</button>)}
         </div>
       </div>
-    </SaverCtx.Provider>
+    </RateCtx.Provider></SaverCtx.Provider>
   );
 }
 
@@ -290,7 +301,7 @@ function ContentStep({ p, drafts, dirty, edit, locale, setLocale, previewKey, on
               <input className="pp-input" placeholder="One line explaining it" aria-label="Explanation" value={b.line} onChange={(e) => set({ line: e.target.value })} />
             </>)} />
 
-          <Rows label="Ritual steps" hint="What the priests do, in order. Shown as a numbered timeline. Mark the most important step as the main ritual."
+          <Rows label="Ritual steps" hint="Optional. What the priests do, in order, shown as a numbered timeline. Mark the most important step as the main ritual."
             items={tr.rituals} onChange={(rituals) => up({ rituals })} blank={{ title: "", text: "", main: false }} addLabel="+ Add a step"
             render={(r, set, i) => (<>
               <input className="pp-input" placeholder="Step name, e.g. Rudrabhishekam" aria-label="Step name" value={r.title} onChange={(e) => set({ title: e.target.value })} />
@@ -368,7 +379,7 @@ function PhotosStep({ p, set, onSave }: { p: Puja; set: (p: Partial<Puja>) => vo
     setError(null);
     try {
       const r = await resumableUpload(f, { purpose: "image", temple_id: p.temple_id, alt: full }, setPct);
-      set({ images: [...p.images, { key: String(r.key), alt: full, url: r.url ? String(r.url) : null }] });
+      set({ images: [...p.images, { key: String(r.key), alt: full, url: r.url ? String(r.url) : null, width: Number(r.width) || null }] });
       setAlt({ en: "", hi: "", ta: "", te: "" });
     } catch (e) {
       setError(`Upload failed: ${e instanceof Error ? e.message : String(e)}. Try again.`);
@@ -445,7 +456,7 @@ function Packages({ puja, onSaved }: { puja: Puja; onSaved: () => void }) {
   useSaver("pricing", "packages", async () => { await api(`/admin/pujas/${puja.id}/packages`, { method: "PUT", json: rows }); onSaved(); });
   return (
     <Card title="Packages">
-      <p className="mb-3 text-small text-ink-600">Turn on the packages you offer and set prices by hand in rupees and dollars. “Names” is how many people the priest names in the sankalp.</p>
+      <p className="mb-3 text-small text-ink-600">Turn on the packages you offer and enter a price in rupees or dollars — the other is filled in for you (edit it to override). “Names” is how many people the priest names in the sankalp.</p>
       <div className="grid gap-3">
         {rows.map((r, i) => (
           <div key={r.code} className={cx("grid grid-cols-2 items-end gap-2 rounded-btn border border-marble-200 p-3 sm:grid-cols-[10rem_repeat(3,1fr)]", !r.active && "opacity-70")}>
@@ -453,13 +464,42 @@ function Packages({ puja, onSaved }: { puja: Puja; onSaved: () => void }) {
               <input type="checkbox" checked={r.active} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, active: e.target.checked } : x)))} /> {r.code}
             </label>
             <Field label="Names"><input type="number" min={1} max={8} className="pp-input" value={r.max_names} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, max_names: Number(e.target.value) } : x)))} /></Field>
-            <Field label="Price ₹"><input type="number" min={0} className="pp-input" value={r.price_inr_minor / 100} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, price_inr_minor: Math.round(Number(e.target.value) * 100) } : x)))} /></Field>
-            <Field label="Price $"><input type="number" min={0} step="0.01" className="pp-input" value={r.price_usd_minor / 100} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, price_usd_minor: Math.round(Number(e.target.value) * 100) } : x)))} /></Field>
+            <PricePair inr={r.price_inr_minor} usd={r.price_usd_minor}
+              onChange={(inr, usd) => setRows((rs) => rs.map((x, k) => (k === i ? { ...x, price_inr_minor: inr, price_usd_minor: usd } : x)))} />
           </div>
         ))}
       </div>
     </Card>
   );
+}
+
+/** ₹ and $ inputs. Typing one fills the other at the site rate while the other is empty or still auto-filled;
+ *  editing the filled one makes it manual. Prices are minor units; conversions round to whole ₹ / $. */
+function PricePair({ inr, usd, onChange }: { inr: number; usd: number; onChange: (inr: number, usd: number) => void }) {
+  const rate = useContext(RateCtx);
+  const [auto, setAuto] = useState<"inr" | "usd" | null>(null);
+  const minor = (v: string) => Math.max(0, Math.round(Number(v) * 100));
+  const convert = (v: number, to: "inr" | "usd") => (!rate || !v ? 0
+    : to === "usd" ? Math.max(100, Math.round(v / 100 / rate) * 100) : Math.round((v / 100) * rate) * 100);
+  const edit = (field: "inr" | "usd", v: number) => {
+    const other = field === "inr" ? "usd" : "inr";
+    const otherVal = field === "inr" ? usd : inr;
+    let next = otherVal;
+    let nextAuto: typeof auto = auto === field ? null : auto; // typing into an auto-filled field makes it manual
+    if (rate && (otherVal === 0 || auto === other)) {
+      next = convert(v, other);
+      nextAuto = next ? other : null;
+    }
+    setAuto(nextAuto);
+    if (field === "inr") onChange(v, next); else onChange(next, v);
+  };
+  const hint = (field: "inr" | "usd") => (auto === field && rate ? `Auto at ₹${rate}/$ — edit to override` : undefined);
+  return (<>
+    <Field label="Price ₹" hint={hint("inr")}><input type="number" min={0} className="pp-input" placeholder="0" value={inr ? inr / 100 : ""}
+      onChange={(e) => edit("inr", minor(e.target.value))} /></Field>
+    <Field label="Price $" hint={hint("usd")}><input type="number" min={0} step="0.01" className="pp-input" placeholder="0" value={usd ? usd / 100 : ""}
+      onChange={(e) => edit("usd", minor(e.target.value))} /></Field>
+  </>);
 }
 
 function SevaPlan({ puja, onSaved }: { puja: Puja; onSaved: () => void }) {
@@ -540,8 +580,7 @@ function Addons({ puja, onSaved }: { puja: Puja; onSaved: (p: Puja) => void }) {
                 ))}
               </div>
               <div className="grid grid-cols-2 items-end gap-2 sm:grid-cols-4">
-                <Field label="Price ₹"><input type="number" min={0} className="pp-input" value={a.price_inr_minor / 100} onChange={(e) => up(i, { price_inr_minor: Math.round(Number(e.target.value) * 100) })} /></Field>
-                <Field label="Price $"><input type="number" min={0} step="0.01" className="pp-input" value={a.price_usd_minor / 100} onChange={(e) => up(i, { price_usd_minor: Math.round(Number(e.target.value) * 100) })} /></Field>
+                <PricePair inr={a.price_inr_minor} usd={a.price_usd_minor} onChange={(inr, usd) => up(i, { price_inr_minor: inr, price_usd_minor: usd })} />
                 <Field label="Max quantity"><input type="number" min={1} max={50} className="pp-input" value={a.max_qty} onChange={(e) => up(i, { max_qty: Number(e.target.value) })} /></Field>
                 <div className="space-y-1 pb-2 text-small">
                   <label className="flex items-center gap-2"><input type="checkbox" checked={a.ships_home} onChange={(e) => up(i, { ships_home: e.target.checked })} /> Ships home</label>
@@ -666,8 +705,16 @@ function describe(e: Err) {
   return `${label}${where} ${what}`;
 }
 
-function PublishStep({ p, errors, busy, unsaved, onCheck, goTo, onChanged }: {
-  p: Puja; errors: Err[] | null; busy: boolean; unsaved: boolean; onCheck: () => void; goTo: (s: Step) => void; onChanged: () => void;
+function NoDatesWarning() {
+  return (
+    <p role="alert" className="mb-3 rounded-card border border-sindoor-600 p-3 text-sindoor-600">
+      No dates are open for booking. Until you add one, this puja can&apos;t be booked and won&apos;t appear in listings.
+    </p>
+  );
+}
+
+function PublishStep({ p, errors, busy, unsaved, openDates, onCheck, goTo, onChanged }: {
+  p: Puja; errors: Err[] | null; busy: boolean; unsaved: boolean; openDates: number | null; onCheck: () => void; goTo: (s: Step) => void; onChanged: () => void;
 }) {
   const { run, busy: publishing, view } = useAction();
   const saved = LOCALES.filter((l) => p.translations[l]);
@@ -701,7 +748,13 @@ function PublishStep({ p, errors, busy, unsaved, onCheck, goTo, onChanged }: {
             })}
           </ul>
         )}
-        <p className="mt-3 text-small text-ink-600">Tip: add at least one date in the Dates step so devotees can book.</p>
+        {openDates === 0 && (
+          <div role="alert" className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-btn border border-sindoor-600 bg-sindoor-600/5 p-2">
+            <span><span className="text-small font-semibold text-sindoor-600">Warning</span> · No dates open for booking — devotees can&apos;t book
+              and it won&apos;t appear in listings. You can still publish.</span>
+            <button type="button" className="pp-link" onClick={() => goTo("dates")}>Add dates</button>
+          </div>
+        )}
       </Card>
       <Card title="Publish">
         {view}
