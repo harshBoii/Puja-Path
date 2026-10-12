@@ -33,6 +33,7 @@ from models import (
     TempleTranslation,
     VenueType,
 )
+from providers.media.storage import public_url
 from services import site_config
 from services.audit import audit
 from services.catalog import puja_detail, temple_summary, tr_for
@@ -189,7 +190,8 @@ async def _puja_admin(db: AsyncSession, p: Puja) -> dict:
         "tradition": p.tradition, "duration_minutes": p.duration_minutes, "priests_count": p.priests_count,
         "sankalp_language": p.sankalp_language, "requires_nakshatra": p.requires_nakshatra,
         "video_sla_hours": p.video_sla_hours, "deliverables": p.deliverables, "prasad_box": p.prasad_box,
-        "images": p.images,
+        # url: where the browser can load the file (R2 or /media), so admin thumbnails match the storefront.
+        "images": [{**i, "url": public_url(i.get("key"))} for i in p.images or []],
         "translations": {t.locale: {"title": t.title, "subtitle": t.subtitle, "occasion_chip": t.occasion_chip,
                                     "about_md": t.about_md, "benefits": t.benefits, "rituals": t.rituals,
                                     "faqs": t.faqs, "meta_title": t.meta_title,
@@ -198,7 +200,8 @@ async def _puja_admin(db: AsyncSession, p: Puja) -> dict:
         "packages": [{"id": k.id, "code": k.code.value, "max_names": k.max_names,
                       "price_inr_minor": k.price_inr_minor, "price_usd_minor": k.price_usd_minor, "active": k.active}
                      for k in p.packages],
-        "addons": [{"id": a.id, "image_key": a.image_key, "price_inr_minor": a.price_inr_minor,
+        "addons": [{"id": a.id, "image_key": a.image_key, "image_url": public_url(a.image_key),
+                    "price_inr_minor": a.price_inr_minor,
                     "price_usd_minor": a.price_usd_minor, "max_qty": a.max_qty, "ships_home": a.ships_home,
                     "active": a.active,
                     "translations": {t.locale: {"name": t.name, "description": t.description} for t in a.translations}}
@@ -247,6 +250,7 @@ async def update_puja(puja_id: int, body: PujaIn, db: AsyncSession = Depends(get
     for img in body.images:
         if not img.get("key"):
             raise HTTPException(400, "image_key_required")
+        img.pop("url", None)  # display-only, added by _puja_admin
     for k, v in body.model_dump(exclude={"slug"}).items():
         setattr(p, k, v)
     if body.slug:

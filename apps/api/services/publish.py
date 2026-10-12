@@ -20,8 +20,9 @@ PLACEHOLDER = re.compile(
 
 
 def _texts(tr) -> list[tuple[str, str]]:
-    out = [("title", tr.title), ("subtitle", tr.subtitle), ("occasion_chip", tr.occasion_chip),
-           ("about_md", tr.about_md), ("meta_title", tr.meta_title), ("meta_description", tr.meta_description)]
+    out = [("title", tr.title), ("subtitle", tr.subtitle), ("occasion_chip", tr.occasion_chip), ("about_md", tr.about_md)]
+    # SEO fields are optional (blank = use title/subtitle) but are still checked when filled in.
+    out += [(f, v) for f, v in (("meta_title", tr.meta_title), ("meta_description", tr.meta_description)) if (v or "").strip()]
     for i, b in enumerate(tr.benefits or []):
         out += [(f"benefits[{i}].title", b.get("title")), (f"benefits[{i}].line", b.get("line"))]
     for i, r in enumerate(tr.rituals or []):
@@ -67,7 +68,7 @@ async def validate_puja(db: AsyncSession, puja: Puja, locales: list[str]) -> lis
         if tr is None:
             err("translation", "missing", loc)
             continue
-        for field in ("title", "subtitle", "occasion_chip", "about_md", "meta_title", "meta_description"):
+        for field in ("title", "subtitle", "occasion_chip", "about_md"):
             if not (getattr(tr, field) or "").strip():
                 err(field, "required", loc)
         if not tr.benefits:

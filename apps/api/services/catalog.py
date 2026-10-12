@@ -140,7 +140,8 @@ async def puja_detail(db: AsyncSession, p: Puja, locale: str, currency: str, sla
     out = {
         **puja_card(p, locale, ev, currency),
         "about_md": tr.about_md, "benefits": tr.benefits, "rituals": tr.rituals, "faqs": tr.faqs,
-        "meta_title": tr.meta_title, "meta_description": tr.meta_description,
+        # Blank SEO fields fall back to the visible title and subtitle.
+        "meta_title": tr.meta_title or tr.title, "meta_description": tr.meta_description or tr.subtitle,
         "images": [image(i, locale) for i in p.images[:6]],
         "facts": {"tradition": p.tradition, "duration_minutes": p.duration_minutes,
                   "priests_count": p.priests_count, "sankalp_language": p.sankalp_language},

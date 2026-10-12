@@ -48,12 +48,11 @@ async def test_publish_in_two_locales_appears_in_both(staff_client, client):
     assert (await client.get(f"/v1/hi/pujas/{p['id']}")).status_code == 404
 
 
-async def test_publish_blocked_on_empty_meta_placeholder_and_banned_phrase(staff_client):
+async def test_publish_blocked_on_placeholder_and_banned_phrase_not_blank_meta(staff_client):
     p = await _new_puja(staff_client)
-    await staff_client.put(f"/v1/admin/pujas/{p['id']}/translations/en", json=_tr(meta_description=""))
-    r = await staff_client.post(f"/v1/admin/pujas/{p['id']}/publish", json={"locales": ["en"]})
-    assert r.status_code == 422
-    assert {"locale": "en", "field": "meta_description", "code": "required"} in r.json()["detail"]["errors"]
+    await staff_client.put(f"/v1/admin/pujas/{p['id']}/translations/en", json=_tr(meta_title="", meta_description=""))
+    errs = (await staff_client.post(f"/v1/admin/pujas/{p['id']}/validate", json={"locales": ["en"]})).json()["errors"]
+    assert not [e for e in errs if e["field"].startswith("meta_")]
 
     await staff_client.put(f"/v1/admin/pujas/{p['id']}/translations/en",
                            json=_tr(about_md="Performed daily (Adjust per policy). TODO add history"))
